@@ -109,4 +109,12 @@
     <string name="category_personal">شخصي</string>
     <string name="category_health">صحة</string>
     <string name="category_other">أخرى</string>
+    <string name="home_monthly_bills">الفواتير الشهرية</string>
+    <string name="home_monthly_bills_description">الكهرباء، الماء، الغاز، الإنترنت، الهاتف، الخدمات والاشتراكات الشهرية</string>
+    <string name="home_rent">الإيجار</string>
+    <string name="home_rent_description">إيجار السكن، المبلغ المستحق، الدفعات المسددة وسجل الدفعات</string>
+    <string name="home_expenses">المصروفات</string>
+    <string name="home_expenses_description">المواد الغذائية، التنظيف، الصيانة، المواصلات، الصحة، المشتريات الشخصية وغيرها</string>
+    <string name="new_rent">إضافة إيجار</string>
+    <string name="select_expense_category">اختر تصنيف المصروف</string>
 </resources>
