@@ -140,6 +140,21 @@ for label, pattern in component_rules.items():
     if re.search(pattern, components):
         errors.append(f"FinanceComponents contains {label}; move it into FinanceDesignTokens")
 
+# This repository is a standalone Native Android project, not a Flutter package.
+for forbidden_name in ("pubspec.yaml", "pubspec.lock"):
+    if (ROOT / forbidden_name).exists():
+        errors.append(f"Flutter package file must not exist in the Native repository root: {forbidden_name}")
+for path in ROOT.rglob("*"):
+    if any(part in {".git", ".gradle", "build"} for part in path.parts):
+        continue
+    if path.is_file() and path.suffix == ".dart":
+        errors.append(f"Flutter/Dart source file found in Native repository: {path.relative_to(ROOT)}")
+    if path.is_dir() and path.name in {"ios", "web"}:
+        errors.append(f"Non-Native application directory found in Native repository: {path.relative_to(ROOT)}")
+settings_file = read(ROOT / "settings.gradle.kts")
+if 'include(":app")' not in settings_file or "includeBuild(" in settings_file:
+    errors.append("Standalone Native Gradle settings must include only the app module and no external included build")
+
 # The Home contract must define exactly the three approved categories and their data sources.
 home_category_markers = {
     "MONTHLY_BILLS": 'HomeRecordSource.BILLS, billKind = "monthly"',
