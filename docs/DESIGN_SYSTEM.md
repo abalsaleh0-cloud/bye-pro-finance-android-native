@@ -180,13 +180,13 @@ Use these components; do not recreate their visual styling inside a screen.
 | App bar | `FinanceComponents.topBar` | Page title and consistent icon actions |
 | Bottom navigation | `FinanceComponents.bottomNavigation` | Five equal destinations with a shared selected/unselected state |
 | Section heading | `FinanceComponents.sectionHeader` | Consistent section hierarchy |
-| Month selector | `FinanceComponents.monthSelector` | Caption plus selected month and shared touch target |
+| Month selector | `FinanceComponents.monthSelector` | Selected month, saved-month list and calendar action shared by all main sections |
 | Metric row | `FinanceComponents.metricRow` | Financial label, icon and amount |
 | Record row | `FinanceComponents.recordRow` | Transaction/debt/bill row and optional actions |
 | Grouped list | `FinanceComponents.groupedList` | Shared list surface with consistent separators |
 | Content card | `FinanceComponents.card` | Padded surface for chart/panel content |
 | Empty state | `FinanceComponents.emptyState` | Shared empty-result message treatment |
-| Category tabs | `FinanceComponents.categoryTabs` | Equal-width, three-way selection control for Home categories |
+| Category tabs | `FinanceComponents.categoryTabs` | Independent horizontal Native tabs, each with its own icon and translated label |
 | Category description | `FinanceComponents.categoryDescription` | Consistent explanatory text below the Home category selector |
 | Divider | `FinanceComponents.bottomDivider` | Shared one-pixel separator |
 | Text, input, button, surface and icon helpers | `FinanceDesignSystem` | Primitive styling building blocks |
@@ -206,13 +206,13 @@ Use these components; do not recreate their visual styling inside a screen.
 The app has five top-level destinations:
 
 1. **الرئيسية (Dashboard):** monthly selector, financial metric groups, cash-flow comparison and recent activity.
-2. **العمل (Work):** five independent routes using the shared numbered editorial index:
+2. **العمل (Work):** five independent routes using the separate Native icon tabs:
    - **الراتب:** salary records for the selected month.
    - **الدفعة:** payments deducted from salary, including legacy `salaryPayment` records.
    - **السلفة:** advances recorded against salary.
    - **الباقي:** main figure is cash remaining in Work after transfers to Home; the unpaid portion of salary (salary minus payments and advances) appears as a secondary figure. It is a view, not an Add action.
    - **تحويلات المنزل:** work-to-home transfer records.
-3. **المنزل (Home):** four independent routes using the same numbered editorial index:
+3. **المنزل (Home):** four independent routes using the same icon-bearing Native tabs:
    - **الفواتير الشهرية:** electricity, water, gas, internet, phone, recurring services and subscriptions. Reads `home_bills.kind = monthly`.
    - **الإيجارات الشهرية:** housing rent obligations, due amount, paid installments and payment history. Reads `home_bills.kind = rent`.
    - **المصروفات:** groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses. Reads `home_expenses`.
@@ -273,3 +273,14 @@ Before any UI change is considered complete:
 - [ ] Documentation is updated for every new token or component.
 
 **No exception is implied by a passing build.** A build proves compilation; it does not prove visual consistency on a device.
+
+
+## 11. Native tabs, icons, month and entry requirements
+
+- Work and Home render separate horizontal rows of independent Native tabs. Numbered editorial indexes, shared index rails, and Flutter tab layouts are not used.
+- Work routes are Salary, Payment, Advance, Remaining and Home Transfers. Home routes are Monthly Bills, Monthly Rent, Expenses and Received from Work.
+- Every route has its own icon. Bill and rent use different icons. Each of the nine expense categories has its own icon.
+- Material icon semantics were selected from the Flutter source, but the Native app ships raster PNG resources only. Gradle extracts the compact icon sheet into generated drawable-nodpi PNG resources. No VectorDrawable icon resources remain.
+- The selected-month row appears on Dashboard, Work, Home, Debts and AI. It offers stored/available month selection and the Android calendar picker, constrained to 1900–2100. Month keys and displayed values use ASCII digits in YYYY-MM format.
+- Every data-entry field has a persistent localized label. Numeric fields use only ASCII digits (0123456789) and stay left-to-right in both languages.
+- Numeric fields expose the shared calculator. It supports scientific expressions, percentages, discounts, splitting, calculation history, copy and result insertion.
