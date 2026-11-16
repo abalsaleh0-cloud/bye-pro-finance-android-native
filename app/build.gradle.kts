@@ -39,7 +39,7 @@ val validateReleaseSigning = tasks.register("validateReleaseSigning") {
     doLast {
         if (!releaseSigningConfigured) {
             throw GradleException(
-                "Release signing is not configured. Set KEYSTORE_PATH, KEYSTORE_PASSWORD, KEY_PASSWORD, and KEY_ALIAS, or configure android/key.properties."
+                "Release signing is not configured. Set KEYSTORE_PATH, KEYSTORE_PASSWORD, KEY_PASSWORD, and KEY_ALIAS, or configure the repository-root key.properties file."
             )
         }
         val store = requireNotNull(resolvedReleaseStoreFile)
