@@ -13,6 +13,7 @@ SCREEN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/MainActivity.kt"
 COMPONENTS = UI / "FinanceComponents.kt"
 SYSTEM = UI / "FinanceDesignSystem.kt"
 HOME_DOMAIN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/domain/HomeCategory.kt"
+WORK_DOMAIN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/domain/WorkCategory.kt"
 STRINGS_AR = ROOT / "app/src/main/res/values/strings.xml"
 STRINGS_EN = ROOT / "app/src/main/res/values-en/strings.xml"
 COLORS = ROOT / "app/src/main/res/values/colors.xml"
@@ -66,6 +67,7 @@ screen = read(SCREEN)
 components = read(COMPONENTS)
 styles = "\n".join(read(path) for path in STYLE_FILES)
 home_domain = read(HOME_DOMAIN)
+work_domain = read(WORK_DOMAIN)
 strings_ar = read(STRINGS_AR)
 strings_en = read(STRINGS_EN)
 
@@ -155,49 +157,102 @@ settings_file = read(ROOT / "settings.gradle.kts")
 if 'include(":app")' not in settings_file or "includeBuild(" in settings_file:
     errors.append("Standalone Native Gradle settings must include only the app module and no external included build")
 
-# The Home contract must define exactly the three approved categories and their data sources.
+# Home has exactly four routes, including amounts actually transferred from Work.
 home_category_markers = {
     "MONTHLY_BILLS": 'HomeRecordSource.BILLS, billKind = "monthly"',
     "RENT": 'HomeRecordSource.BILLS, billKind = "rent"',
     "EXPENSES": "HomeRecordSource.HOME_EXPENSES",
+    "RECEIVED_FROM_WORK": "HomeRecordSource.WORK_TRANSFERS",
 }
 for category, mapping in home_category_markers.items():
     if category not in home_domain or mapping not in home_domain:
         errors.append(f"Home category mapping is missing or changed: {category}")
-if len(re.findall(r"^    (?:MONTHLY_BILLS|RENT|EXPENSES)\(", home_domain, flags=re.MULTILINE)) != 3:
-    errors.append("Home must contain exactly three primary categories.")
+if len(re.findall(r"^    (?:MONTHLY_BILLS|RENT|EXPENSES|RECEIVED_FROM_WORK)\\(", home_domain, flags=re.MULTILINE)) != 4:
+    errors.append("Home must contain exactly four primary categories.")
 
-# The screen must consume the shared Home contract and shared entry components.
+# Work has five routes; Remaining is a calculated route, not an Add operation.
+work_category_markers = (
+    'SALARY(recordKind = "salary")',
+    'PAYMENT(recordKind = "payment")',
+    'ADVANCE(recordKind = "advance")',
+    "REMAINING(calculated = true)",
+    "HOME_TRANSFERS(transfers = true)",
+)
+for marker in work_category_markers:
+    if marker not in work_domain:
+        errors.append(f"Work category mapping is missing or changed: {marker}")
+if len(re.findall(r"^    (?:SALARY|PAYMENT|ADVANCE|REMAINING|HOME_TRANSFERS)\\(", work_domain, flags=re.MULTILINE)) != 5:
+    errors.append("Work must contain exactly five primary routes.")
+
+# Screens consume the shared category index and original entry components.
 for marker in (
-    "HomeCategory.ordered.map",
-    "FinanceComponents.categoryTabs(",
+    "HomeCategory.ordered.mapIndexed",
+    "WorkCategory.ordered.mapIndexed",
+    "FinanceComponents.categoryIndex(",
+    "FinanceComponents.balanceStatement(",
     "FinanceComponents.categoryDescription(",
+    "FinanceComponents.brandSignature(",
+    "FinanceComponents.entryArtwork(",
+    "FinanceComponents.editorialInput(",
     "private fun showWelcomeScreen()",
     "private fun showLoginScreen()",
     "FinanceDesignSystem.button(",
-    "FinanceDesignSystem.input(",
 ):
     if marker not in screen:
         errors.append(f"MainActivity is missing required shared UI integration: {marker}")
+if "FinanceComponents.categoryTabs(" in screen or "FinanceComponents.categoryTabs(" in components:
+    errors.append("Traditional segmented category tabs are prohibited; use categoryIndex().")
 
-# Launch and Home copy must exist in both supported languages.
+# Add menus remain available for every category in their own section.
+create_menu = screen.split("private fun showCreateMenu(anchor: View)", 1)[-1].split("private fun addMenuAction", 1)[0]
+work_menu = create_menu.split("Section.WORK ->", 1)[-1].split("Section.HOME ->", 1)[0]
+home_menu = create_menu.split("Section.HOME ->", 1)[-1].split("Section.DEBTS ->", 1)[0]
+for marker in ("s(R.string.new_salary)", "s(R.string.new_work_payment)", "s(R.string.new_advance)", "s(R.string.new_transfer)"):
+    if marker not in work_menu:
+        errors.append(f"Work Add menu is missing an action: {marker}")
+for marker in ("s(R.string.new_bill)", "s(R.string.new_rent)", "s(R.string.new_expense)"):
+    if marker not in home_menu:
+        errors.append(f"Home Add menu is missing an action: {marker}")
+if "when (selectedHomeCategory)" in home_menu:
+    errors.append("Home Add menu must not depend on the selected Home category.")
+
+# All route names/descriptions and entry copy must be bilingual.
 required_strings = (
     "home_monthly_bills",
     "home_rent",
     "home_expenses",
+    "home_received_from_work",
     "home_monthly_bills_description",
     "home_rent_description",
     "home_expenses_description",
+    "home_received_from_work_description",
+    "home_received_from_work_tag",
+    "work_salary",
+    "work_payment",
+    "work_advance",
+    "work_remaining",
+    "work_home_transfers",
+    "work_salary_tag",
+    "work_payment_tag",
+    "work_advance_tag",
+    "work_remaining_tag",
+    "work_home_transfers_tag",
+    "work_remaining_formula",
+    "welcome_kicker",
     "welcome_title",
     "welcome_description",
+    "welcome_step",
+    "entry_brand_meta",
     "continue_to_login",
     "swipe_to_continue",
+    "login_kicker",
     "login_title",
     "login_description",
+    "login_security_note",
     "login_invalid",
 )
 for string_name in required_strings:
-    pattern = rf'<string\s+name="{re.escape(string_name)}">'
+    pattern = rf'<string\\s+name="{re.escape(string_name)}">'
     if not re.search(pattern, strings_ar):
         errors.append(f"Arabic string resource is missing: {string_name}")
     if not re.search(pattern, strings_en):
