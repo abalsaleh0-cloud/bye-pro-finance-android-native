@@ -1657,7 +1657,7 @@ class MainActivity : Activity() {
             setPadding(dp(FinanceDesignTokens.CARD_PADDING), dp(FinanceDesignTokens.SPACE_12),
                 dp(FinanceDesignTokens.CARD_PADDING), dp(FinanceDesignTokens.SPACE_16))
             background = GradientDrawable().apply {
-                val radius = dp(24).toFloat()
+                val radius = dp(FinanceDesignTokens.SPACE_24).toFloat()
                 cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
                 setColor(palette.surface)
             }
@@ -1665,7 +1665,7 @@ class MainActivity : Activity() {
         val handle = View(this).apply {
             background = FinanceDesignSystem.rounded(this@MainActivity, palette.divider, 8)
         }
-        root.addView(handle, LinearLayout.LayoutParams(dp(40), dp(4)).apply {
+        root.addView(handle, LinearLayout.LayoutParams(dp(FinanceDesignTokens.BOTTOM_SHEET_HANDLE_WIDTH), dp(FinanceDesignTokens.SPACE_4)).apply {
             gravity = Gravity.CENTER_HORIZONTAL
             bottomMargin = dp(FinanceDesignTokens.SPACE_12)
         })
@@ -1680,7 +1680,7 @@ class MainActivity : Activity() {
         ), LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.BUTTON_HEIGHT), 1f))
         heading.addView(FinanceDesignSystem.iconAction(
             this, darkTheme, R.drawable.ic_close, s(R.string.cancel)
-        ) { dialog.dismiss() }, LinearLayout.LayoutParams(dp(44), dp(44)))
+        ) { dialog.dismiss() }, LinearLayout.LayoutParams(dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)))
         root.addView(heading)
         root.addView(FinanceDesignSystem.text(
             this, monthDisplayLabel(selectedMonth), FinanceDesignTokens.TEXT_BALANCE_SP,
@@ -1698,7 +1698,7 @@ class MainActivity : Activity() {
                 orientation = LinearLayout.HORIZONTAL
                 layoutDirection = View.LAYOUT_DIRECTION_RTL
                 gravity = Gravity.CENTER_VERTICAL
-                minimumHeight = dp(56)
+                minimumHeight = dp(FinanceDesignTokens.MONTH_PICKER_ROW_HEIGHT)
                 setPadding(dp(FinanceDesignTokens.SPACE_12), 0,
                     dp(FinanceDesignTokens.SPACE_12), 0)
                 background = if (selected)
@@ -1736,7 +1736,7 @@ class MainActivity : Activity() {
             addView(list)
         }
         root.addView(listScroll, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(300)
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.MONTH_PICKER_LIST_HEIGHT)
         ))
         root.addView(FinanceDesignSystem.button(
             this, darkTheme, s(R.string.calendar), primary = false
@@ -1814,7 +1814,7 @@ class MainActivity : Activity() {
             setPadding(dp(FinanceDesignTokens.SPACE_16), dp(FinanceDesignTokens.SPACE_12),
                 dp(FinanceDesignTokens.SPACE_16), dp(FinanceDesignTokens.SPACE_12))
             background = GradientDrawable().apply {
-                val radius = dp(20).toFloat()
+                val radius = dp(FinanceDesignTokens.DIALOG_RADIUS).toFloat()
                 cornerRadii = floatArrayOf(radius, radius, radius, radius, radius, radius, radius, radius)
                 setColor(palette.accent)
             }
@@ -1839,8 +1839,8 @@ class MainActivity : Activity() {
         fun calendarArrow(glyph: String, action: () -> Unit): TextView =
             FinanceDesignSystem.text(this, glyph, FinanceDesignTokens.TEXT_VALUE_SP, palette.text, bold = true).apply {
                 gravity = Gravity.CENTER
-                minWidth = dp(44)
-                minHeight = dp(44)
+                minWidth = dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)
+                minHeight = dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)
                 background = GradientDrawable().apply {
                     shape = GradientDrawable.OVAL
                     setColor(palette.raised)
@@ -1884,9 +1884,9 @@ class MainActivity : Activity() {
                     .show()
             }
         }
-        monthRow.addView(previousMonth, LinearLayout.LayoutParams(dp(44), dp(44)))
-        monthRow.addView(monthTitle, LinearLayout.LayoutParams(0, dp(44), 1f))
-        monthRow.addView(nextMonth, LinearLayout.LayoutParams(dp(44), dp(44)))
+        monthRow.addView(previousMonth, LinearLayout.LayoutParams(dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)))
+        monthRow.addView(monthTitle, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), 1f))
+        monthRow.addView(nextMonth, LinearLayout.LayoutParams(dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)))
         root.addView(monthRow)
         val weekdayRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -1894,7 +1894,7 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER_VERTICAL
         }
         root.addView(weekdayRow, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(34)
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.CALENDAR_WEEKDAY_HEIGHT)
         ))
         val calendarGrid = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -1923,7 +1923,7 @@ class MainActivity : Activity() {
                     textDirection = View.TEXT_DIRECTION_RTL
                     setTextLocale(locale)
                 }
-                weekdayRow.addView(dayLabel, LinearLayout.LayoutParams(0, dp(34), 1f))
+                weekdayRow.addView(dayLabel, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.CALENDAR_WEEKDAY_HEIGHT), 1f))
             }
             val first = visibleMonth.clone() as java.util.Calendar
             first.set(java.util.Calendar.DAY_OF_MONTH, 1)
@@ -1970,10 +1970,10 @@ class MainActivity : Activity() {
                             refreshCalendarAction?.invoke()
                         }
                     }
-                    row.addView(cell, LinearLayout.LayoutParams(0, dp(42), 1f))
+                    row.addView(cell, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.CALENDAR_DAY_CELL_HEIGHT), 1f))
                 }
                 calendarGrid.addView(row, LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, dp(42)
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.CALENDAR_DAY_CELL_HEIGHT)
                 ))
             }
         }
@@ -1999,7 +1999,7 @@ class MainActivity : Activity() {
         dialog.setContentView(root)
         dialog.show()
         dialog.window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-        val width = (resources.displayMetrics.widthPixels - dp(32)).coerceAtMost(dp(420))
+        val width = (resources.displayMetrics.widthPixels - dp(FinanceDesignTokens.DIALOG_HORIZONTAL_MARGIN)).coerceAtMost(dp(FinanceDesignTokens.DIALOG_MAX_WIDTH))
         dialog.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
@@ -2137,7 +2137,7 @@ class MainActivity : Activity() {
                     clearResultAction?.invoke()
                     rebuildPanelAction?.invoke()
                 }
-                row.addView(reuse, LinearLayout.LayoutParams(dp(44), dp(44)))
+                row.addView(reuse, LinearLayout.LayoutParams(dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)))
                 val copy = FinanceDesignSystem.iconAction(
                     this, darkTheme, R.drawable.ic_calculator, s(R.string.calculator_copy)
                 ) {
@@ -2145,7 +2145,7 @@ class MainActivity : Activity() {
                     clipboard.setPrimaryClip(ClipData.newPlainText("calculator", entry.second))
                     showToast(s(R.string.calculator_copied))
                 }
-                row.addView(copy, LinearLayout.LayoutParams(dp(44), dp(44)))
+                row.addView(copy, LinearLayout.LayoutParams(dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)))
                 historyPanel.addView(row)
                 historyPanel.addView(FinanceComponents.bottomDivider(this, darkTheme))
             }
@@ -2254,12 +2254,12 @@ class MainActivity : Activity() {
                 if (selected) palette.onAccent else palette.text, bold = selected
             ).apply {
                 gravity = Gravity.CENTER
-                minHeight = dp(38)
+                minHeight = dp(FinanceDesignTokens.CALCULATOR_CHIP_HEIGHT)
                 setPadding(dp(FinanceDesignTokens.SPACE_12), 0, dp(FinanceDesignTokens.SPACE_12), 0)
                 background = GradientDrawable().apply {
-                    cornerRadius = dp(20).toFloat()
+                    cornerRadius = dp(FinanceDesignTokens.DIALOG_RADIUS).toFloat()
                     setColor(if (selected) palette.accent else palette.raised)
-                    setStroke(dp(1), if (selected) palette.accent else palette.divider)
+                    setStroke(dp(FinanceDesignTokens.DIVIDER_HEIGHT), if (selected) palette.accent else palette.divider)
                 }
                 isClickable = true
                 isFocusable = true
@@ -2274,11 +2274,11 @@ class MainActivity : Activity() {
                 bold = key == "="
             ).apply {
                 gravity = Gravity.CENTER
-                minHeight = dp(44)
+                minHeight = dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)
                 background = GradientDrawable().apply {
                     cornerRadius = dp(FinanceDesignTokens.CONTROL_RADIUS).toFloat()
                     setColor(if (key == "=") palette.accent else palette.raised)
-                    setStroke(dp(1), if (key == "=") palette.accent else palette.divider)
+                    setStroke(dp(FinanceDesignTokens.DIVIDER_HEIGHT), if (key == "=") palette.accent else palette.divider)
                 }
                 isClickable = true
                 isFocusable = true
@@ -2328,12 +2328,12 @@ class MainActivity : Activity() {
                 mode = 0
                 clearResult()
                 rebuildPanelAction?.invoke()
-            }, LinearLayout.LayoutParams(0, dp(38), 1f))
+            }, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.CALCULATOR_CHIP_HEIGHT), 1f))
             modeRow.addView(choiceChip(s(R.string.calculator_financial), mode == 1) {
                 mode = 1
                 clearResult()
                 rebuildPanelAction?.invoke()
-            }, LinearLayout.LayoutParams(0, dp(38), 1f).apply {
+            }, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.CALCULATOR_CHIP_HEIGHT), 1f).apply {
                 marginStart = dp(FinanceDesignTokens.SPACE_8)
             })
             if (mode == 0) {
@@ -2353,12 +2353,12 @@ class MainActivity : Activity() {
                         layoutDirection = View.LAYOUT_DIRECTION_LTR
                     }
                     keys.forEach { key ->
-                        row.addView(keyButton(key), LinearLayout.LayoutParams(0, dp(44), 1f).apply {
+                        row.addView(keyButton(key), LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), 1f).apply {
                             if (key != keys.first()) marginStart = dp(FinanceDesignTokens.SPACE_4)
                         })
                     }
                     panel.addView(row, LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, dp(44)
+                        ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)
                     ).apply { topMargin = dp(FinanceDesignTokens.SPACE_6) })
                 }
             } else {
@@ -2375,7 +2375,7 @@ class MainActivity : Activity() {
                         financialMode = index
                         clearResult()
                         rebuildPanelAction?.invoke()
-                    }, LinearLayout.LayoutParams(0, dp(38), 1f).apply {
+                    }, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.CALCULATOR_CHIP_HEIGHT), 1f).apply {
                         if (index > 0) marginStart = dp(FinanceDesignTokens.SPACE_4)
                     })
                 }

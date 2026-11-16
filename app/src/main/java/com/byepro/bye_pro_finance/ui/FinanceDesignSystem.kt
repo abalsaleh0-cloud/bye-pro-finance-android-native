@@ -80,6 +80,14 @@ object FinanceDesignTokens {
     const val MULTILINE_INPUT_HEIGHT = 80
     const val WELCOME_ICON_SIZE = 64
     const val SWIPE_THRESHOLD = 72
+    const val BOTTOM_SHEET_HANDLE_WIDTH = 40
+    const val MONTH_PICKER_ROW_HEIGHT = 56
+    const val MONTH_PICKER_LIST_HEIGHT = 300
+    const val CALENDAR_WEEKDAY_HEIGHT = 34
+    const val CALENDAR_DAY_CELL_HEIGHT = 42
+    const val DIALOG_HORIZONTAL_MARGIN = 32
+    const val DIALOG_MAX_WIDTH = 420
+    const val CALCULATOR_CHIP_HEIGHT = 38
 
     // Flutter-style horizontally scrolling pill tabs.
     const val SECTION_TAB_MIN_WIDTH = 88
