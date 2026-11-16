@@ -350,6 +350,39 @@ object FinanceComponents {
         return FinanceEditorialField(column,input)
     }
 
+    fun selectField(
+        context: Context,
+        isDark: Boolean,
+        label: String,
+        onClick: (TextView) -> Unit
+    ): TextView {
+        val palette = FinanceDesignSystem.colors(isDark)
+        return FinanceDesignSystem.text(
+            context,
+            "$label  ▾",
+            FinanceDesignTokens.TEXT_BODY_SP,
+            palette.text
+        ).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),
+                0,
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),
+                0
+            )
+            minHeight = FinanceDesignSystem.dp(context, FinanceDesignTokens.BUTTON_HEIGHT)
+            background = FinanceDesignSystem.rounded(
+                context,
+                palette.raised,
+                FinanceDesignTokens.CONTROL_RADIUS
+            )
+            isClickable = true
+            isFocusable = true
+            foreground = FinanceDesignSystem.ripple(context, isDark)
+            setOnClickListener { onClick(this) }
+        }
+    }
+
     fun categoryDescription(
         context: Context,
         isDark: Boolean,
