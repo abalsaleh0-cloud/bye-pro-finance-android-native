@@ -79,6 +79,8 @@ object FinanceDesignTokens {
     const val RECORD_ROW_HEIGHT = 64
     const val EMPTY_STATE_VERTICAL_PADDING = SPACE_24
     const val MULTILINE_INPUT_HEIGHT = 80
+    const val WELCOME_ICON_SIZE = 64
+    const val SWIPE_THRESHOLD = 72
 
     // Comparison chart geometry (dp).
     const val CHART_LABEL_ROW_HEIGHT = 24
