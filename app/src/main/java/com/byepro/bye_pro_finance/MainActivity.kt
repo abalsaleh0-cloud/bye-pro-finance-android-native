@@ -29,10 +29,11 @@ import com.byepro.bye_pro_finance.domain.ActivityItem
 import com.byepro.bye_pro_finance.domain.DashboardSummary
 import com.byepro.bye_pro_finance.domain.FinanceRecord
 import com.byepro.bye_pro_finance.domain.HomeCategory
+import com.byepro.bye_pro_finance.domain.WorkCategory
 import com.byepro.bye_pro_finance.domain.HomeRecordSource
 import com.byepro.bye_pro_finance.ui.FinanceAppearance
 import com.byepro.bye_pro_finance.ui.FinanceAppearanceMode
-import com.byepro.bye_pro_finance.ui.FinanceCategoryTab
+import com.byepro.bye_pro_finance.ui.FinanceCategoryIndexItem
 import com.byepro.bye_pro_finance.ui.FinanceComponents
 import com.byepro.bye_pro_finance.ui.FinanceDesignSystem
 import com.byepro.bye_pro_finance.ui.FinanceDesignTokens
@@ -69,6 +70,7 @@ class MainActivity : Activity() {
     private var entryStage = EntryStage.WELCOME
     private var activeSection = Section.DASHBOARD
     private var selectedHomeCategory = HomeCategory.MONTHLY_BILLS
+    private var selectedWorkCategory = WorkCategory.SALARY
     private var selectedMonth = YearMonth.now()
     private var localeCode = "ar"
     private var themeMode = "system"
@@ -102,6 +104,9 @@ class MainActivity : Activity() {
         selectedHomeCategory = savedInstanceState?.getString("home_category")
             ?.let { runCatching { HomeCategory.valueOf(it) }.getOrNull() }
             ?: HomeCategory.MONTHLY_BILLS
+        selectedWorkCategory = savedInstanceState?.getString("work_category")
+            ?.let { runCatching { WorkCategory.valueOf(it) }.getOrNull() }
+            ?: WorkCategory.SALARY
 
         darkTheme = resolveDarkTheme()
         applySystemBars()
@@ -112,6 +117,7 @@ class MainActivity : Activity() {
         outState.putString("active_section", activeSection.name)
         outState.putString("selected_month", selectedMonth.toString())
         outState.putString("home_category", selectedHomeCategory.name)
+        outState.putString("work_category", selectedWorkCategory.name)
         super.onSaveInstanceState(outState)
     }
 
@@ -729,29 +735,99 @@ class MainActivity : Activity() {
     private fun renderWork() {
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.work_records))
         addMonthQuickPicker()
-        val records = (
-            repository.loadWorkRecords(selectedMonth) +
-                repository.loadTransfers(selectedMonth)
-            ).sortedByDescending { it.timestamp }
+
+        val items = WorkCategory.ordered.mapIndexed { index, category ->
+            val titleResource = when (category) {
+                WorkCategory.SALARY -> R.string.work_salary
+                WorkCategory.PAYMENT -> R.string.work_payment
+                WorkCategory.ADVANCE -> R.string.work_advance
+                WorkCategory.REMAINING -> R.string.work_remaining
+                WorkCategory.HOME_TRANSFERS -> R.string.work_home_transfers
+            }
+            val descriptionResource = when (category) {
+                WorkCategory.SALARY -> R.string.work_salary_tag
+                WorkCategory.PAYMENT -> R.string.work_payment_tag
+                WorkCategory.ADVANCE -> R.string.work_advance_tag
+                WorkCategory.REMAINING -> R.string.work_remaining_tag
+                WorkCategory.HOME_TRANSFERS -> R.string.work_home_transfers_tag
+            }
+            FinanceCategoryIndexItem(
+                index = (index + 1).toString().padStart(2, '0'),
+                title = s(titleResource),
+                subtitle = s(descriptionResource),
+                selected = selectedWorkCategory == category
+            ) {
+                selectedWorkCategory = category
+                renderCurrentSection()
+            }
+        }
+        pageContent.addView(
+            FinanceComponents.categoryIndex(this, darkTheme, items),
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+        addGap(FinanceDesignTokens.SPACE_8)
+
+        val workRecords = repository.loadWorkRecords(selectedMonth)
+        val records = when (selectedWorkCategory) {
+            WorkCategory.SALARY -> workRecords.filter { it.kind == "salary" }
+            WorkCategory.PAYMENT -> workRecords.filter {
+                it.kind == "payment" || it.kind == "salaryPayment"
+            }
+            WorkCategory.ADVANCE -> workRecords.filter { it.kind == "advance" }
+            WorkCategory.REMAINING -> emptyList()
+            WorkCategory.HOME_TRANSFERS -> repository.loadTransfers(selectedMonth)
+        }.sortedByDescending { it.timestamp }
+
+        if (selectedWorkCategory == WorkCategory.REMAINING) {
+            val summary = repository.loadDashboard(selectedMonth)
+            pageContent.addView(
+                FinanceComponents.balanceStatement(
+                    this,
+                    darkTheme,
+                    s(R.string.work_remaining),
+                    formatAmount(summary.currentSalaryOutstanding),
+                    s(R.string.work_remaining_formula)
+                ),
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+            return
+        }
         if (records.isEmpty()) {
-            addEmptyState(s(com.byepro.bye_pro_finance.R.string.no_records))
+            addEmptyState(s(R.string.no_records))
             return
         }
         addRecordGroup(records)
     }
 
+
+
     private fun renderHome() {
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.home_records))
         addMonthQuickPicker()
 
-        val tabs = HomeCategory.ordered.map { category ->
+        val items = HomeCategory.ordered.mapIndexed { index, category ->
             val titleResource = when (category) {
                 HomeCategory.MONTHLY_BILLS -> R.string.home_monthly_bills
                 HomeCategory.RENT -> R.string.home_rent
                 HomeCategory.EXPENSES -> R.string.home_expenses
+                HomeCategory.RECEIVED_FROM_WORK -> R.string.home_received_from_work
             }
-            FinanceCategoryTab(
+            val descriptionResource = when (category) {
+                HomeCategory.MONTHLY_BILLS -> R.string.home_monthly_bills_tag
+                HomeCategory.RENT -> R.string.home_rent_tag
+                HomeCategory.EXPENSES -> R.string.home_expenses_tag
+                HomeCategory.RECEIVED_FROM_WORK -> R.string.home_received_from_work_tag
+            }
+            FinanceCategoryIndexItem(
+                index = (index + 1).toString().padStart(2, '0'),
                 title = s(titleResource),
+                subtitle = s(descriptionResource),
                 selected = selectedHomeCategory == category
             ) {
                 selectedHomeCategory = category
@@ -759,22 +835,21 @@ class MainActivity : Activity() {
             }
         }
         pageContent.addView(
-            FinanceComponents.categoryTabs(this, darkTheme, tabs),
+            FinanceComponents.categoryIndex(this, darkTheme, items),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(FinanceDesignTokens.SECTION_TAB_HEIGHT)
-            ).apply {
-                bottomMargin = dp(FinanceDesignTokens.SPACE_4)
-            }
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         )
 
-        val categoryDescription = when (selectedHomeCategory) {
+        val description = when (selectedHomeCategory) {
             HomeCategory.MONTHLY_BILLS -> s(R.string.home_monthly_bills_description)
             HomeCategory.RENT -> s(R.string.home_rent_description)
             HomeCategory.EXPENSES -> s(R.string.home_expenses_description)
+            HomeCategory.RECEIVED_FROM_WORK -> s(R.string.home_received_from_work_description)
         }
         pageContent.addView(
-            FinanceComponents.categoryDescription(this, darkTheme, categoryDescription),
+            FinanceComponents.categoryDescription(this, darkTheme, description),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -788,6 +863,7 @@ class MainActivity : Activity() {
                 requireNotNull(selectedHomeCategory.billKind)
             )
             HomeRecordSource.HOME_EXPENSES -> repository.loadHomeExpenses(selectedMonth)
+            HomeRecordSource.WORK_TRANSFERS -> repository.loadTransfers(selectedMonth)
         }.sortedByDescending {
             if (it.kind == "bill") Long.MAX_VALUE else it.timestamp
         }
@@ -798,6 +874,8 @@ class MainActivity : Activity() {
         }
         addRecordGroup(records)
     }
+
+
 
     private fun renderDebts() {
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.debt_records))
@@ -880,36 +958,35 @@ class MainActivity : Activity() {
         val menu = PopupMenu(popupContext(), anchor)
         when (activeSection) {
             Section.WORK -> {
-                addMenuAction(menu, s(com.byepro.bye_pro_finance.R.string.new_salary)) {
+                addMenuAction(menu, s(R.string.new_salary)) {
+                    selectedWorkCategory = WorkCategory.SALARY
                     showWorkEntryForm("salary")
                 }
-                addMenuAction(menu, s(com.byepro.bye_pro_finance.R.string.new_advance)) {
-                    showWorkEntryForm("advance")
-                }
-                addMenuAction(menu, s(com.byepro.bye_pro_finance.R.string.new_work_payment)) {
+                addMenuAction(menu, s(R.string.new_work_payment)) {
+                    selectedWorkCategory = WorkCategory.PAYMENT
                     showWorkEntryForm("payment")
                 }
-                addMenuAction(menu, s(com.byepro.bye_pro_finance.R.string.new_transfer)) {
+                addMenuAction(menu, s(R.string.new_advance)) {
+                    selectedWorkCategory = WorkCategory.ADVANCE
+                    showWorkEntryForm("advance")
+                }
+                addMenuAction(menu, s(R.string.new_transfer)) {
+                    selectedWorkCategory = WorkCategory.HOME_TRANSFERS
                     showTransferForm()
                 }
             }
             Section.HOME -> {
-                when (selectedHomeCategory) {
-                    HomeCategory.MONTHLY_BILLS -> {
-                        addMenuAction(menu, s(R.string.new_bill)) {
-                            showBillForm(billKind = "monthly")
-                        }
-                    }
-                    HomeCategory.RENT -> {
-                        addMenuAction(menu, s(R.string.new_rent)) {
-                            showBillForm(billKind = "rent")
-                        }
-                    }
-                    HomeCategory.EXPENSES -> {
-                        addMenuAction(menu, s(R.string.new_expense)) {
-                            showHomeExpenseForm()
-                        }
-                    }
+                addMenuAction(menu, s(R.string.new_bill)) {
+                    selectedHomeCategory = HomeCategory.MONTHLY_BILLS
+                    showBillForm(billKind = "monthly")
+                }
+                addMenuAction(menu, s(R.string.new_rent)) {
+                    selectedHomeCategory = HomeCategory.RENT
+                    showBillForm(billKind = "rent")
+                }
+                addMenuAction(menu, s(R.string.new_expense)) {
+                    selectedHomeCategory = HomeCategory.EXPENSES
+                    showHomeExpenseForm()
                 }
             }
             Section.DEBTS -> {
