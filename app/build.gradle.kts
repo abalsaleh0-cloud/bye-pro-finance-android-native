@@ -5,43 +5,18 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-val rasterFinanceIconNames = listOf(
-    "ic_add", "ic_advance", "ic_ai", "ic_arrow_back", "ic_bill", "ic_bye_pro_finance",
-    "ic_calculator", "ic_calendar", "ic_close", "ic_dashboard", "ic_debts", "ic_delete",
-    "ic_edit", "ic_expense", "ic_expense_cleaning", "ic_expense_groceries",
-    "ic_expense_health", "ic_expense_housing", "ic_expense_maintenance", "ic_expense_other",
-    "ic_expense_personal", "ic_expense_transport", "ic_expense_utilities", "ic_home",
-    "ic_home_bills", "ic_home_expenses", "ic_home_received", "ic_home_rent", "ic_more",
-    "ic_payments", "ic_search", "ic_settings", "ic_transfer", "ic_work", "ic_work_advance",
-    "ic_work_payment", "ic_work_remaining", "ic_work_salary", "ic_work_transfers"
-)
-val financeIconSheet = layout.projectDirectory.file("src/main/assets/byepro-icons-sheet.png")
 val financeRasterRes = layout.buildDirectory.dir("generated/res/financeRasterIcons")
-val generateFinanceRasterIcons = tasks.register("generateFinanceRasterIcons") {
-    inputs.file(financeIconSheet)
+val generateFinanceRasterIcons = tasks.register<Exec>("generateFinanceRasterIcons") {
+    val source = layout.projectDirectory.file("src/main/assets/byepro-icons-sheet.png")
+    val generator = rootProject.file("scripts/generate_raster_icons.py")
+    inputs.file(source)
+    inputs.file(generator)
     outputs.dir(financeRasterRes)
-    doLast {
-        val source = javax.imageio.ImageIO.read(financeIconSheet.asFile)
-            ?: throw GradleException("Unable to read the BYE PRO raster icon sheet.")
-        val cellSize = 32
-        val columns = 8
-        require(source.width == columns * cellSize) { "Unexpected BYE PRO icon sheet width: " + source.width }
-        require(source.height >= ((rasterFinanceIconNames.size + columns - 1) / columns) * cellSize) {
-            "The BYE PRO icon sheet is missing icon rows."
-        }
-        val drawableDirectory = financeRasterRes.get().dir("drawable-nodpi").asFile
-        drawableDirectory.mkdirs()
-        rasterFinanceIconNames.forEachIndexed { index, name ->
-            val tile = java.awt.image.BufferedImage(cellSize, cellSize, java.awt.image.BufferedImage.TYPE_INT_ARGB)
-            val graphics = tile.createGraphics()
-            val sourceX = (index % columns) * cellSize
-            val sourceY = (index / columns) * cellSize
-            graphics.drawImage(source, 0, 0, cellSize, cellSize, sourceX, sourceY, sourceX + cellSize, sourceY + cellSize, null)
-            graphics.dispose()
-            val output = java.io.File(drawableDirectory, name + ".png")
-            check(javax.imageio.ImageIO.write(tile, "png", output)) { "PNG writer is not available for " + name }
-        }
-    }
+    commandLine(
+        "python3", generator.absolutePath,
+        "--input", source.asFile.absolutePath,
+        "--output", financeRasterRes.get().asFile.absolutePath
+    )
 }
 
 // Keep release signing compatible with the Flutter app. The same keystore,
