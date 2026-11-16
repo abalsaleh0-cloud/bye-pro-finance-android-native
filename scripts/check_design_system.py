@@ -65,6 +65,9 @@ dimens_xml = read(DIMENS)
 screen = read(SCREEN)
 components = read(COMPONENTS)
 styles = "\n".join(read(path) for path in STYLE_FILES)
+home_domain = read(HOME_DOMAIN)
+strings_ar = read(STRINGS_AR)
+strings_en = read(STRINGS_EN)
 
 # Android resource theme colors must mirror the semantic Kotlin palettes.
 xml_colors = {
@@ -146,7 +149,7 @@ home_category_markers = {
 for category, mapping in home_category_markers.items():
     if category not in home_domain or mapping not in home_domain:
         errors.append(f"Home category mapping is missing or changed: {category}")
-if len(re.findall(r"^    (?:MONTHLY_BILLS|RENT|EXPENSES)\\(", home_domain, flags=re.MULTILINE)) != 3:
+if len(re.findall(r"^    (?:MONTHLY_BILLS|RENT|EXPENSES)\(", home_domain, flags=re.MULTILINE)) != 3:
     errors.append("Home must contain exactly three primary categories.")
 
 # The screen must consume the shared Home contract and shared entry components.
@@ -179,7 +182,7 @@ required_strings = (
     "login_invalid",
 )
 for string_name in required_strings:
-    pattern = rf'<string\\s+name="{re.escape(string_name)}">'
+    pattern = rf'<string\s+name="{re.escape(string_name)}">'
     if not re.search(pattern, strings_ar):
         errors.append(f"Arabic string resource is missing: {string_name}")
     if not re.search(pattern, strings_en):
