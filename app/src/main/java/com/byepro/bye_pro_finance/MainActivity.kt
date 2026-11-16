@@ -2060,7 +2060,7 @@ class MainActivity : Activity() {
         ).apply {
             textDirection = View.TEXT_DIRECTION_LTR
             textAlignment = View.TEXT_ALIGNMENT_VIEW_END
-            isTextSelectable = true
+            setTextIsSelectable(true)
         }
         val historyPanel = FinanceComponents.card(this, darkTheme).apply {
             visibility = View.GONE
