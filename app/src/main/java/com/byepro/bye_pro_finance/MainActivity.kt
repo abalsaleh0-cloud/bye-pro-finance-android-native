@@ -106,6 +106,8 @@ class MainActivity : Activity() {
             ?: Section.DASHBOARD
         selectedMonth = savedInstanceState?.getString("selected_month")
             ?.let { runCatching { YearMonth.parse(it) }.getOrNull() }
+            ?: database.readSetting("selected_month")
+                ?.let { runCatching { YearMonth.parse(it) }.getOrNull() }
             ?: YearMonth.now()
         selectedHomeCategory = savedInstanceState?.getString("home_category")
             ?.let { runCatching { HomeCategory.valueOf(it) }.getOrNull() }
@@ -1648,11 +1650,17 @@ class MainActivity : Activity() {
         val items = available.map { monthLabel(it) }.toTypedArray()
         dialogBuilder().setTitle(s(R.string.month_shown))
             .setItems(items) { _, index ->
-                selectedMonth = available[index]
-                renderCurrentSection()
+                selectMonth(available[index])
             }
             .setNegativeButton(s(R.string.cancel), null)
             .show()
+    }
+
+    /** Persist the shared selected month using the Flutter app's setting key. */
+    private fun selectMonth(month: YearMonth) {
+        selectedMonth = month
+        database.writeSetting("selected_month", month.toString())
+        renderCurrentSection()
     }
 
     private fun monthLabel(month: YearMonth): String =
@@ -1662,8 +1670,7 @@ class MainActivity : Activity() {
         val picker = DatePickerDialog(
             ContextThemeWrapper(this, if (darkTheme) R.style.NativeFinanceDialogDarkTheme else R.style.NativeFinanceDialogLightTheme),
             { _, year, month, _ ->
-                selectedMonth = YearMonth.of(year, month + 1)
-                renderCurrentSection()
+                selectMonth(YearMonth.of(year, month + 1))
             },
             selectedMonth.year, selectedMonth.monthValue - 1, 1
         )
