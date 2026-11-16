@@ -76,7 +76,10 @@ tasks.configureEach {
 }
 
 android {
-    sourceSets.getByName("main").res.srcDir(financeRasterRes)
+    // Use a concrete directory path here because AGP 9 rejects Provider values
+    // in the legacy SourceSet API. The preBuild dependency above guarantees the
+    // PNG resources exist before resource merging starts.
+    sourceSets.getByName("main").res.srcDir(financeRasterRes.get().asFile)
     namespace = "com.byepro.bye_pro_finance"
     compileSdk = 36
 
@@ -85,8 +88,8 @@ android {
         applicationId = "com.byepro.bye_pro_finance"
         minSdk = 30
         targetSdk = 36
-        versionCode = 159
-        versionName = "1.1.58"
+        versionCode = 160
+        versionName = "1.1.59"
         testInstrumentationRunner = "android.test.InstrumentationTestRunner"
     }
 
