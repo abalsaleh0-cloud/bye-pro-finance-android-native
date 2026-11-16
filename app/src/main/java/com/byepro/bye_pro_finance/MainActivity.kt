@@ -28,6 +28,7 @@ import com.byepro.bye_pro_finance.domain.DashboardSummary
 import com.byepro.bye_pro_finance.domain.FinanceRecord
 import com.byepro.bye_pro_finance.ui.FinanceAppearance
 import com.byepro.bye_pro_finance.ui.FinanceAppearanceMode
+import com.byepro.bye_pro_finance.ui.FinanceCategoryTab
 import com.byepro.bye_pro_finance.ui.FinanceComponents
 import com.byepro.bye_pro_finance.ui.FinanceDesignSystem
 import com.byepro.bye_pro_finance.ui.FinanceDesignTokens
@@ -50,6 +51,10 @@ class MainActivity : Activity() {
         DASHBOARD, WORK, HOME, DEBTS, AI
     }
 
+    private enum class HomeCategory {
+        MONTHLY_BILLS, RENT, EXPENSES
+    }
+
     private lateinit var database: LegacyFinanceDatabase
     private lateinit var repository: DashboardRepository
     private lateinit var writeRepository: FinanceWriteRepository
@@ -59,6 +64,7 @@ class MainActivity : Activity() {
     private lateinit var navigation: LinearLayout
 
     private var activeSection = Section.DASHBOARD
+    private var selectedHomeCategory = HomeCategory.MONTHLY_BILLS
     private var selectedMonth = YearMonth.now()
     private var localeCode = "ar"
     private var themeMode = "system"
@@ -83,6 +89,9 @@ class MainActivity : Activity() {
         selectedMonth = savedInstanceState?.getString("selected_month")
             ?.let { runCatching { YearMonth.parse(it) }.getOrNull() }
             ?: YearMonth.now()
+        selectedHomeCategory = savedInstanceState?.getString("home_category")
+            ?.let { runCatching { HomeCategory.valueOf(it) }.getOrNull() }
+            ?: HomeCategory.MONTHLY_BILLS
 
         darkTheme = resolveDarkTheme()
         applySystemBars()
@@ -93,6 +102,7 @@ class MainActivity : Activity() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("active_section", activeSection.name)
         outState.putString("selected_month", selectedMonth.toString())
+        outState.putString("home_category", selectedHomeCategory.name)
         super.onSaveInstanceState(outState)
     }
 
@@ -493,12 +503,64 @@ class MainActivity : Activity() {
     private fun renderHome() {
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.home_records))
         addMonthQuickPicker()
-        val records = (
-            repository.loadHomeExpenses(selectedMonth) +
-                repository.loadBills(selectedMonth)
-            ).sortedByDescending { if (it.kind == "bill") Long.MAX_VALUE else it.timestamp }
+
+        val tabs = listOf(
+            FinanceCategoryTab(
+                title = s(R.string.home_monthly_bills),
+                selected = selectedHomeCategory == HomeCategory.MONTHLY_BILLS
+            ) {
+                selectedHomeCategory = HomeCategory.MONTHLY_BILLS
+                renderCurrentSection()
+            },
+            FinanceCategoryTab(
+                title = s(R.string.home_rent),
+                selected = selectedHomeCategory == HomeCategory.RENT
+            ) {
+                selectedHomeCategory = HomeCategory.RENT
+                renderCurrentSection()
+            },
+            FinanceCategoryTab(
+                title = s(R.string.home_expenses),
+                selected = selectedHomeCategory == HomeCategory.EXPENSES
+            ) {
+                selectedHomeCategory = HomeCategory.EXPENSES
+                renderCurrentSection()
+            }
+        )
+        pageContent.addView(
+            FinanceComponents.categoryTabs(this, darkTheme, tabs),
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(FinanceDesignTokens.SECTION_TAB_HEIGHT)
+            ).apply {
+                bottomMargin = dp(FinanceDesignTokens.SPACE_4)
+            }
+        )
+
+        val categoryDescription = when (selectedHomeCategory) {
+            HomeCategory.MONTHLY_BILLS -> s(R.string.home_monthly_bills_description)
+            HomeCategory.RENT -> s(R.string.home_rent_description)
+            HomeCategory.EXPENSES -> s(R.string.home_expenses_description)
+        }
+        pageContent.addView(
+            FinanceComponents.categoryDescription(this, darkTheme, categoryDescription),
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+        addGap(FinanceDesignTokens.SECTION_SPACING)
+
+        val records = when (selectedHomeCategory) {
+            HomeCategory.MONTHLY_BILLS -> repository.loadBills(selectedMonth, "monthly")
+            HomeCategory.RENT -> repository.loadBills(selectedMonth, "rent")
+            HomeCategory.EXPENSES -> repository.loadHomeExpenses(selectedMonth)
+        }.sortedByDescending {
+            if (it.kind == "bill") Long.MAX_VALUE else it.timestamp
+        }
+
         if (records.isEmpty()) {
-            addEmptyState(s(com.byepro.bye_pro_finance.R.string.no_records))
+            addEmptyState(s(R.string.no_records))
             return
         }
         addRecordGroup(records)
@@ -599,11 +661,22 @@ class MainActivity : Activity() {
                 }
             }
             Section.HOME -> {
-                addMenuAction(menu, s(com.byepro.bye_pro_finance.R.string.new_expense)) {
-                    showHomeExpenseForm()
-                }
-                addMenuAction(menu, s(com.byepro.bye_pro_finance.R.string.new_bill)) {
-                    showBillForm()
+                when (selectedHomeCategory) {
+                    HomeCategory.MONTHLY_BILLS -> {
+                        addMenuAction(menu, s(R.string.new_bill)) {
+                            showBillForm(billKind = "monthly")
+                        }
+                    }
+                    HomeCategory.RENT -> {
+                        addMenuAction(menu, s(R.string.new_rent)) {
+                            showBillForm(billKind = "rent")
+                        }
+                    }
+                    HomeCategory.EXPENSES -> {
+                        addMenuAction(menu, s(R.string.new_expense)) {
+                            showHomeExpenseForm()
+                        }
+                    }
                 }
             }
             Section.DEBTS -> {
@@ -831,11 +904,32 @@ class MainActivity : Activity() {
             "groceries", "utilities", "housing", "cleaning", "maintenance",
             "transport", "personal", "health", "other"
         )
-        val category = formInput(
-            form,
-            s(com.byepro.bye_pro_finance.R.string.category),
-            existing?.categoryId ?: "other"
-        )
+        var selectedCategoryId = existing?.categoryId
+            ?.takeIf { it in categories } ?: "other"
+        val category = FinanceComponents.selectField(
+            context = this,
+            isDark = darkTheme,
+            label = categoryTitle(selectedCategoryId)
+        ) { field ->
+            val labels = categories.map(::categoryTitle).toTypedArray()
+            val selectedIndex = categories.indexOf(selectedCategoryId).coerceAtLeast(0)
+            dialogBuilder()
+                .setTitle(s(R.string.select_expense_category))
+                .setSingleChoiceItems(labels, selectedIndex) { dialog, which ->
+                    selectedCategoryId = categories[which]
+                    field.text = categoryTitle(selectedCategoryId) + "  ▾"
+                    dialog.dismiss()
+                }
+                .setNegativeButton(s(R.string.cancel), null)
+                .show()
+        }
+        form.addView(category, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(FinanceDesignTokens.BUTTON_HEIGHT)
+        ).apply {
+            bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING / 2)
+        })
+
         val note = formInput(
             form,
             s(com.byepro.bye_pro_finance.R.string.note_optional),
@@ -854,8 +948,7 @@ class MainActivity : Activity() {
             .setView(form)
             .setPositiveButton(s(com.byepro.bye_pro_finance.R.string.save)) { _, _ ->
                 val value = amount.text.toString().trim().toLongOrNull()
-                val categoryId = category.text.toString().trim()
-                if (value == null || value <= 0L || categoryId.isBlank()) {
+                if (value == null || value <= 0L || selectedCategoryId.isBlank()) {
                     showRuleMessage(FinanceRuleException(FinanceRuleException.Rule.INVALID_AMOUNT))
                     return@setPositiveButton
                 }
@@ -863,7 +956,7 @@ class MainActivity : Activity() {
                     writeRepository.saveHomeExpense(
                         id = existing?.id ?: UUID.randomUUID().toString(),
                         amountMinorUnits = value,
-                        categoryId = categoryId,
+                        categoryId = selectedCategoryId,
                         expenseDateEpochMillis = date.value(),
                         dueYear = dueYear,
                         dueMonth = dueMonth,
@@ -937,7 +1030,7 @@ class MainActivity : Activity() {
             .show()
     }
 
-    private fun showBillForm(existing: FinanceRecord? = null) {
+    private fun showBillForm(existing: FinanceRecord? = null, billKind: String? = null) {
         val form = createForm()
         val title = formInput(
             form,
@@ -958,10 +1051,11 @@ class MainActivity : Activity() {
         )
         val dueYear = existing?.dueYear ?: selectedMonth.year
         val dueMonth = existing?.dueMonth ?: selectedMonth.monthValue
-        val kind = if (existing?.detail?.startsWith("rent") == true) "rent" else "monthly"
+        val kind = billKind ?: if (existing?.detail?.startsWith("rent") == true) "rent" else "monthly"
+        val formTitle = if (kind == "rent") R.string.new_rent else R.string.new_bill
 
         dialogBuilder()
-            .setTitle(s(com.byepro.bye_pro_finance.R.string.new_bill))
+            .setTitle(s(formTitle))
             .setView(form)
             .setPositiveButton(s(com.byepro.bye_pro_finance.R.string.save)) { _, _ ->
                 val name = title.text.toString().trim()
