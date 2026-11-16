@@ -145,7 +145,7 @@
     <string name="current_password_invalid">كلمة المرور الحالية غير صحيحة</string>
     <string name="username_too_short">اسم المستخدم يجب أن يتكون من 3 أحرف على الأقل</string>
     <string name="password_too_short">كلمة المرور يجب أن تتكون من 6 أحرف على الأقل</string>
-    <string name="home_received_from_work">الوارد من العمل</string>
+    <string name="home_received_from_work">الواردة من العمل</string>
     <string name="home_received_from_work_tag">المبالغ المحوّلة من العمل</string>
     <string name="home_received_from_work_description">المبالغ التي وصلت إلى المنزل عبر تحويلات قسم العمل خلال الشهر المحدد.</string>
     <string name="work_salary">الراتب</string>

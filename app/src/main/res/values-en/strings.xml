@@ -145,7 +145,7 @@
     <string name="current_password_invalid">The current password is incorrect</string>
     <string name="username_too_short">Username must contain at least 3 characters</string>
     <string name="password_too_short">Password must contain at least 6 characters</string>
-    <string name="home_received_from_work">From Work</string>
+    <string name="home_received_from_work">Received from Work</string>
     <string name="home_received_from_work_tag">Transfers received from Work</string>
     <string name="home_received_from_work_description">Amounts transferred from the Work section into the household during the selected month.</string>
     <string name="work_salary">Salary</string>
