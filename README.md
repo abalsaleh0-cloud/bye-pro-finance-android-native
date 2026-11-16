@@ -9,7 +9,7 @@ These documents are the required reference for all development:
 | Document | Covers |
 |---|---|
 | [Design System](docs/DESIGN_SYSTEM.md) | Mandatory colors, typography, spacing, dimensions, reusable components, RTL rules and UI review checklist |
-| [Architecture](docs/ARCHITECTURE.md) | Project structure, data flow, SQLite compatibility, finance rules, security and migration boundaries |
+| [Architecture](docs/ARCHITECTURE.md) | Project structure, data flow, SQLite compatibility, security and migration boundaries |\n| [Data Dictionary](docs/DATA_DICTIONARY.md) | Every SQLite table/column, relationships, dashboard formulas, financial validations and schema migration policy |
 | [Development](docs/DEVELOPMENT.md) | Local build commands, CI, contribution workflow, testing and production release gate |
 | [Implementation Status](docs/IMPLEMENTATION_STATUS.md) | Implemented work, known limitations and remaining release blockers |
 
