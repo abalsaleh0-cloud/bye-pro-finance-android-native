@@ -1,7 +1,7 @@
 # BYE PRO Finance Native — Requirements Traceability
 
 **Repository:** `abalsaleh0-cloud/bye-pro-finance-android-native`  
-**Development baseline:** `1.1.56 (157)`  
+**Development baseline:** `1.1.57 (158)`  
 **Scope:** Native Android only. The Flutter and web source repositories are outside this change.
 
 This document is the project-level evidence map. A requirement is not considered fully accepted merely because the Kotlin source exists; automated checks and real-device acceptance are listed separately.
@@ -32,7 +32,7 @@ The Home section remains separate from Work. Its numbered-index order is fixed a
 | 1 | **الفواتير الشهرية** | Electricity, water, gas, internet, phone, monthly services and subscriptions | `home_bills` where `kind = monthly` | Add Monthly Bill |
 | 2 | **الإيجارات الشهرية** | Housing rent, amount due, paid installments and payment history | `home_bills` where `kind = rent` | Add Monthly Rent |
 | 3 | **المصروفات** | Groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses | `home_expenses` | Add Expense |
-| 4 | **الوارد من العمل** | Money actually received into Home through Work transfers | `work_home_transfers`, filtered by selected month | Created in Work → Transfer to Home |
+| 4 | **الوارد من العمل** | Actual transfers received into Home, with a monthly total and the underlying transfer history | `work_home_transfers`, filtered by selected month; total from `DashboardSummary.transfersTotal` | Created in Work → Transfer to Home |
 
 Implementation points:
 
@@ -133,7 +133,7 @@ These checks cannot be proven by static source inspection alone:
 | 1 | الراتب | Salary records | `work_entries.kind = salary` | Add Salary |
 | 2 | الدفعة | Work payments | `work_entries.kind = payment` plus legacy `salaryPayment` | Add Payment |
 | 3 | السلفة | Advances | `work_entries.kind = advance` | Add Advance |
-| 4 | الباقي | Calculated remaining salary after payments and advances | `currentSalaryOutstanding` from existing monthly summary formula | None — calculated view |
+| 4 | الباقي | Actual cash left in Work after household transfers, with the unpaid salary amount shown separately | `workRemaining = cashReceived - transfersTotal`; secondary `currentSalaryOutstanding = max(salary - payments - advances, 0)` | None — calculated view |
 | 5 | تحويلات المنزل | Work-to-Home transfer history | `work_home_transfers` | Transfer to Home |
 
 Work Add always exposes four actions in the requested order: salary, payment, advance, Home transfer. Both Work and Home use the same numbered editorial index component; neither section uses the old segmented pill selector.
