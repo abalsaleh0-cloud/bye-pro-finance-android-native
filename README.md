@@ -1,48 +1,55 @@
-# Bye Pro Finance — Native Android application
+# BYE PRO Finance — Native Android
 
-This is the new Android-native implementation. The active native UI uses one centralized design system inspired by Telegram's clean Android presentation. It does not use the old 77-theme catalogue, custom palettes, animated backgrounds, cinematic effects, or theme-specific layouts.
+Standalone Kotlin/Android implementation of BYE PRO Finance. Native development is isolated in this repository; the Flutter and web source repositories remain separate and must not be modified as part of Native-only work.
 
-## New appearance system
-- Exactly three appearance modes: **System**, **Light**, and **Dark**.
-- One shared light palette and one shared dark palette.
-- Switching modes changes colors only. Component sizes, page structure, spacing, icons, typography, and RTL layout stay the same.
-- Appearance and language are separate settings.
-- Old appearance keys (`theme_id`, `custom_themes`, and `appearance_preset`) are removed from `app_settings` on native app startup. The new `theme_mode`, language preference, and AI engine preference are retained.
-- No financial tables or transaction records are touched by this cleanup.
+## Documentation index
 
-## Design system
-The native design system is centralized in `FinanceDesignSystem.kt`, `FinanceAppearance.kt`, and `FinanceComponents.kt`.
-- Page padding: 16 horizontal / 12 vertical.
-- Card radius: 16; control radius: 12; dialog radius: 20.
-- Button and standard input height: 48; touch target: 44.
-- App bar: 56; bottom navigation: 68; five separate destinations.
-- Record and metric rows: 64; record icon box: 40; standard icon: 20.
-- Dividers: 1; section spacing: 12; motion: 160 ms.
-- Common components define app bars, section headers, grouped lists, record rows, metric rows, fields, buttons, dialogs and popups.
+These documents are the required reference for all development:
 
-## Native stack
-- Kotlin and Android framework Views.
-- SQLiteOpenHelper opening the existing Drift SQLite file.
-- No Compose, WebView, paid SDK, or extra runtime UI package in this migration stage.
+| Document | Covers |
+|---|---|
+| [Design System](docs/DESIGN_SYSTEM.md) | Mandatory colors, typography, spacing, dimensions, reusable components, RTL rules and UI review checklist |
+| [Architecture](docs/ARCHITECTURE.md) | Project structure, data flow, SQLite compatibility, finance rules, security and migration boundaries |
+| [Development](docs/DEVELOPMENT.md) | Local build commands, CI, contribution workflow, testing and production release gate |
+| [Implementation Status](docs/IMPLEMENTATION_STATUS.md) | Implemented work, known limitations and remaining release blockers |
 
-## Existing data compatibility
+**Development rule:** read the relevant document before changing code. All screen styling must use the shared Design System. Screen-local visual rules are not allowed.
+
+## Current project baseline
+
+- Native UI: Kotlin with Android framework Views.
+- App destinations: Dashboard, Work, Home, Debts and AI.
+- Appearance: System, Light and Dark; geometry remains the same across modes.
+- Default language: Arabic. English changes text only; the interface remains RTL.
 - Release application ID: `com.byepro.bye_pro_finance`.
-- Existing database: `context.getDir("flutter", MODE_PRIVATE)/bye_pro_finance.sqlite`.
-- Existing SQLite user_version: `2`.
-- Debug builds use the separate package suffix `.nativepreview` and therefore do not overwrite the installed Flutter app. The preview build has its own app sandbox and cannot display production records.
-- Native release signing reads the same environment variables (`KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_PASSWORD`, `KEY_ALIAS`) or the repository-root `key.properties` file. Relative `storeFile` paths resolve from `app/`, matching the original Android signing convention.
-- Release signing is validated before `assembleRelease`/`bundleRelease`; the private keystore and credentials are never committed or uploaded by CI.
-- The release `applicationId` remains `com.byepro.bye_pro_finance`. The debug preview still uses `.nativepreview` and cannot update the installed app.
+- Current Native version configuration: `1.1.55 (156)`.
+- Debug preview package suffix: `.nativepreview`, isolated from the production app sandbox.
+- Database: compatible SQLite file `bye_pro_finance.sqlite`, schema version 2.
 
-## Build and validation
-From the repository root, with JDK 17, Android SDK 36, and Gradle 9.5:
+## Design System
+
+The mandatory implementation contract is [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md). Its code entry points are:
+
+- `FinanceDesignTokens` and `FinanceDesignSystem` in `ui/FinanceDesignSystem.kt`.
+- Reusable components in `ui/FinanceComponents.kt`.
+- Appearance modes in `ui/FinanceAppearance.kt`.
+- Platform theme resources in `app/src/main/res/values`.
+
+The Kotlin palette and Android resource theme bridge must remain aligned. Add new tokens and shared components centrally, with tests and documentation.
+
+## Build and test
+
+Requirements: JDK 17, Android SDK 36 and Gradle 9.5.0.
 
 ```bash
 gradle :app:testDebugUnitTest --no-daemon
 gradle :app:assembleDebug --no-daemon
 ```
 
-GitHub Actions runs both the design/appearance unit tests and native debug APK assembly. A successful preview build does not mean that the production signing or migration is complete.
+The Native CI workflow runs unit tests and assembles the isolated debug preview APK. A successful debug build does not prove production signing, data continuity, login continuity or feature parity.
 
-## Migration boundary
-The native implementation is being brought to feature parity in stages. Do not replace the installed production APK until data continuity, sign-in behaviour, all financial workflows, backup/restore, AI assistant integration, and device-level UI checks are complete.
+## Important migration boundary
+
+The Native app is still being brought to feature parity. The AI section currently displays a migration notice, and the current Native calculator supports basic two-value addition only. Production replacement is blocked until signing, data/session continuity, backup/restore, financial regression coverage and real-device checks are verified.
+
+See [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) for the evidence-based checklist and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the release gate.
