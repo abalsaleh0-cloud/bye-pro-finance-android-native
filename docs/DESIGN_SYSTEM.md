@@ -210,13 +210,13 @@ The app has five top-level destinations:
    - **الراتب:** salary records for the selected month.
    - **الدفعة:** payments deducted from salary, including legacy `salaryPayment` records.
    - **السلفة:** advances recorded against salary.
-   - **الباقي:** calculated balance (salary minus payments and advances); it is a view, not an Add action.
+   - **الباقي:** main figure is cash remaining in Work after transfers to Home; the unpaid portion of salary (salary minus payments and advances) appears as a secondary figure. It is a view, not an Add action.
    - **تحويلات المنزل:** work-to-home transfer records.
 3. **المنزل (Home):** four independent routes using the same numbered editorial index:
    - **الفواتير الشهرية:** electricity, water, gas, internet, phone, recurring services and subscriptions. Reads `home_bills.kind = monthly`.
    - **الإيجارات الشهرية:** housing rent obligations, due amount, paid installments and payment history. Reads `home_bills.kind = rent`.
    - **المصروفات:** groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses. Reads `home_expenses`.
-   - **الوارد من العمل:** amounts actually transferred from Work to Home. Reads `work_home_transfers`, filtered to the selected month.
+   - **الوارد من العمل:** monthly sum and individual records actually transferred from Work to Home. Reads `work_home_transfers`, filtered to the selected month; the total comes from `DashboardSummary.transfersTotal`.
 
    Work Add always offers salary, payment, advance and transfer to Home. Home Add always offers monthly bill, monthly rent and expense, regardless of the selected route. The "Remaining" and "From Work" routes display existing or calculated data and do not create another money record.
 4. **الديون (Debts):** creditor/debtor records and payment actions.
