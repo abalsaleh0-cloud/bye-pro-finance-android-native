@@ -69,9 +69,9 @@ object FinanceComponents {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(
                 FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_VERTICAL_PADDING),
                 FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING),
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING),
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING)
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_VERTICAL_PADDING)
             )
             setBackgroundColor(palette.surface)
         }
@@ -208,7 +208,7 @@ object FinanceComponents {
                 isClickable = true
                 isFocusable = true
                 foreground = FinanceDesignSystem.ripple(context, isDark)
-                setOnClickListener { onClick() }
+                setOnClickListener { clickedView -> onClick(clickedView) }
             }
             addView(month, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
