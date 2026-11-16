@@ -1,0 +1,123 @@
+# BYE PRO Finance Native — Requirements Traceability
+
+**Repository:** `abalsaleh0-cloud/bye-pro-finance-android-native`  
+**Development baseline:** `1.1.56 (157)`  
+**Scope:** Native Android only. The Flutter and web source repositories are outside this change.
+
+This document is the project-level evidence map. A requirement is not considered fully accepted merely because the Kotlin source exists; automated checks and real-device acceptance are listed separately.
+
+## 1. Mandatory Design System
+
+| Requirement | Implementation | Automated evidence | Acceptance status |
+|---|---|---|---|
+| One Design System for all app screens and surfaces | `ui/FinanceDesignSystem.kt`, `ui/FinanceComponents.kt`, `MainActivity.kt` | `FinanceDesignSystemTest`, `scripts/check_design_system.py` | Source integrated; real-device review remains required |
+| No screen-local colors or sizes | Semantic color and dimension tokens; framework XML bridge | CI parity and screen guardrails | Must pass CI on the current branch |
+| Light/Dark changes colors only | `FinanceAppearance.kt` and the shared palette | `FinanceAppearanceTest`, palette/contrast tests | Device review pending |
+| Arabic default; English changes text only; RTL remains fixed | `values/strings.xml`, `values-en/strings.xml`, fixed RTL screens | Resource checks in `check_design_system.py` | Source integrated; device review pending |
+| Shared controls for forms, fields, buttons, popups, dialogs, cards, navigation and empty states | `FinanceComponents.kt`, `FinanceDesignSystem.kt`, shared Android theme resources | Design-system unit tests and CI checker | Device review pending |
+
+### Design System rules
+
+- Every new visual value must be a semantic token, not a local numeric or color literal.
+- A reusable visual pattern must be added to `FinanceComponents` before screen usage.
+- A token/component change must include a unit test, a documentation update and a passing CI check.
+- Screen geometry, component order, dimensions and navigation order must remain consistent between Light/Dark and Arabic/English.
+
+## 2. Home section — exactly three primary categories
+
+The Home section remains separate from Work. Its tab order is fixed and owned by `domain/HomeCategory.kt`.
+
+| Order | Main category | What it includes | Data source and filter | Add action |
+|---:|---|---|---|---|
+| 1 | **الفواتير الشهرية** | Electricity, water, gas, internet, phone, monthly services and subscriptions | `home_bills` where `kind = monthly` | Add Monthly Bill |
+| 2 | **الإيجار** | Housing rent, amount due, paid installments and payment history | `home_bills` where `kind = rent` | Add Rent |
+| 3 | **المصروفات** | Groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses | `home_expenses` | Add Expense |
+
+Implementation points:
+
+- Category declaration and source mapping: `domain/HomeCategory.kt`.
+- Tab selection, description and data loading: `MainActivity.renderHome()`.
+- Monthly/rent bill persistence: `FinanceWriteRepository.saveBill()`.
+- Household expense persistence and category selection: `FinanceWriteRepository.saveHomeExpense()` and `MainActivity.showHomeExpenseForm()`.
+- Arabic/English labels and descriptions: `res/values/strings.xml` and `res/values-en/strings.xml`.
+
+Automated coverage:
+
+- `HomeCategoryTest.homeHasExactlyThreeCategoriesInTheRequiredOrder`
+- `HomeCategoryTest.eachHomeCategoryUsesItsOwnDataSourceAndFilter`
+- The design-system CI checker confirms the category contract, shared tabs and both language resources are present.
+
+## 3. Welcome and local login
+
+### Entry sequence
+
+1. A fresh application process enters `MainActivity.onCreate()`.
+2. Existing preferences and the local-authentication profile are loaded without replacing an existing credential profile.
+3. `showWelcomeScreen()` is the first visible screen.
+4. The user continues by pressing the shared Continue button or using the horizontal swipe gesture.
+5. If login protection is enabled, `showLoginScreen()` appears; if disabled, the main application opens.
+6. Login errors keep the user on the login screen.
+
+### Initial profile
+
+| Setting | Initial value |
+|---|---|
+| Username | `admin` |
+| Password | `admin` |
+| Login protection | Enabled |
+
+The default credentials are created only when no complete local credential profile exists. They are bootstrap credentials and should be changed immediately after the first successful login.
+
+### Change credentials and toggle login
+
+Settings → Login and Security provides:
+
+- Change username and password.
+- Verify the current password before saving new credentials.
+- Require username length of at least 3 characters.
+- Require password length of at least 6 characters.
+- Confirm the new password.
+- Enable or disable login protection after a confirmation dialog.
+- Preserve the existing credential profile when login protection is disabled.
+
+### Password storage
+
+`LocalAuthentication` stores a PBKDF2-HMAC-SHA256 verifier with a random 16-byte salt. The readable password is not stored. The local profile keys are documented in `DATA_DICTIONARY.md`.
+
+### Automated coverage
+
+- `LocalAuthenticationTest.firstLaunchCreatesRequestedDefaultCredentialsAndHashOnly`
+- `LocalAuthenticationTest.credentialsCanBeChangedOnlyWithCurrentPassword`
+- `LocalAuthenticationTest.credentialsValidationUsesDocumentedMinimumLengths`
+- `LocalAuthenticationTest.loginCanBeDisabledAndReenabledWithoutLosingCredentials`
+- `LocalAuthenticationTest.initializationDoesNotResetExistingCredentialsOrDisabledState`
+
+## 4. Version and repository boundaries
+
+- Native version for this development update: `1.1.56 (157)`.
+- The debug APK uses the `.nativepreview` application ID suffix and a separate Android sandbox.
+- Production application ID remains `com.byepro.bye_pro_finance`.
+- Do not change the Flutter repository or the web source project.
+- Do not merge or issue a production APK without explicit user approval.
+- A debug preview does not prove production signing, shared private app storage, or in-place update compatibility.
+
+## 5. Required real-device acceptance
+
+These checks cannot be proven by static source inspection alone:
+
+- [ ] Install and launch the preview APK on the target Android phone.
+- [ ] Verify Welcome is first and both swipe and Continue work.
+- [ ] Verify `admin` / `admin` login, incorrect-credential feedback and password masking.
+- [ ] Change the username/password, force-stop/reopen, and verify the new values.
+- [ ] Disable login, force-stop/reopen, and verify the login screen is skipped.
+- [ ] Re-enable login, force-stop/reopen, and verify the saved credentials are required.
+- [ ] Check all three Home categories and each Add action against the correct data source.
+- [ ] Repeat in Light/Dark and Arabic/English without layout mirroring.
+- [ ] Verify the existing finance data has not changed.
+- [ ] Review touch targets, keyboard overlap, swipe recognition and long text on the actual screen size.
+
+## 6. Current verification record
+
+- Earlier CI run `43929573545` failed during Kotlin Gradle plugin resolution before tests ran. No source/test result was produced by that run.
+- This branch upgrades Kotlin Gradle Plugin to `2.4.21`; the new CI result must be recorded here after it completes.
+- Until the new CI run and device checklist pass, the work is **implemented in source but not fully accepted**.
