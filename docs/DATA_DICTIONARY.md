@@ -186,7 +186,7 @@ All multi-step financial operations and their balance checks execute inside SQLi
 - Work-entry amounts must be positive and due year/month values valid.
 - Supported work kinds are salary, advance and payment (with `salaryPayment` accepted as a legacy input and normalized).
 - A change that reduces received work cash must not leave monthly transfers greater than received cash.
-- A transfer must not exceed the month's received-work amount.
+- A new or increased transfer must not exceed the month's received-work amount. Existing overdrawn legacy data is not automatically rejected unless the proposed change increases that overdraw.
 - A transfer change must not leave home commitments greater than the resulting transfer total.
 
 ### Home expenses
