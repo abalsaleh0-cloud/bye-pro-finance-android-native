@@ -36,9 +36,10 @@ On pushes to `main` and pull requests, CI:
 3. Installs Android SDK platform 36 and build tools 36.0.0.
 4. Sets up Gradle 9.5.0.
 5. Runs `:app:testDebugUnitTest`.
-6. Confirms the Native release application ID is `com.byepro.bye_pro_finance`.
-7. Assembles the Native debug APK.
-8. Uploads `bye-pro-finance-native-preview` for seven days.
+6. Runs `python3 scripts/check_design_system.py` to compare Kotlin palette values with Android XML resources, verify core dimensions, and reject screen-local styling.
+7. Confirms the Native release application ID is `com.byepro.bye_pro_finance`.
+8. Assembles the Native debug APK.
+9. Uploads `bye-pro-finance-native-preview` for seven days.
 
 A passing CI run demonstrates that the configured tests pass and the debug APK assembles. It does not demonstrate production signing, real-device correctness, production data visibility, or migration completeness.
 
