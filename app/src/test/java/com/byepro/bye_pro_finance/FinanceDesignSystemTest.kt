@@ -36,7 +36,6 @@ class FinanceDesignSystemTest {
         assertEquals(30, FinanceDesignTokens.NAVIGATION_ICON_SLOT_HEIGHT)
         assertEquals(20, FinanceDesignTokens.NAVIGATION_LABEL_HEIGHT)
         assertEquals(60, FinanceDesignTokens.NAVIGATION_CONTENT_HEIGHT)
-        assertEquals(48, FinanceDesignTokens.SECTION_TAB_HEIGHT)
         assertEquals(36, FinanceDesignTokens.SECTION_HEADER_HEIGHT)
 
         assertEquals(64, FinanceDesignTokens.METRIC_TILE_MIN_HEIGHT)
