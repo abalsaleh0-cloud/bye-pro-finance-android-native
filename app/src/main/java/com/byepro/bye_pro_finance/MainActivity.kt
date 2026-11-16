@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.res.Configuration
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
@@ -35,6 +37,8 @@ import com.byepro.bye_pro_finance.domain.WorkCategory
 import com.byepro.bye_pro_finance.domain.HomeRecordSource
 import com.byepro.bye_pro_finance.ui.FinanceAppearance
 import com.byepro.bye_pro_finance.ui.FinanceAppearanceMode
+import com.byepro.bye_pro_finance.ui.FinanceCategoryTabItem
+import com.byepro.bye_pro_finance.ui.FinanceIconOptionItem
 import com.byepro.bye_pro_finance.ui.FinanceComponents
 import com.byepro.bye_pro_finance.ui.FinanceDesignSystem
 import com.byepro.bye_pro_finance.ui.FinanceDesignTokens
@@ -1676,25 +1680,254 @@ class MainActivity : Activity() {
         picker.show()
     }
 
-    private fun showCalculator() {
-        val form = createForm()
-        val first = formInput(form, s(R.string.enter_amount), numeric = true)
-        val second = formInput(form, s(R.string.enter_amount), numeric = true)
-        dialogBuilder()
-            .setTitle(s(com.byepro.bye_pro_finance.R.string.calculator))
-            .setView(form)
-            .setPositiveButton(s(com.byepro.bye_pro_finance.R.string.result)) { _, _ ->
-                val a = first.text.toString().toLongOrNull() ?: 0L
-                val b = second.text.toString().toLongOrNull() ?: 0L
-                dialogBuilder()
-                    .setMessage(formatAmount(a + b))
-                    .setPositiveButton(s(com.byepro.bye_pro_finance.R.string.cancel), null)
-                    .show()
+    private fun showCalculator(onUseResult: ((String) -> Unit)? = null) {
+        val palette = FinanceDesignSystem.colors(darkTheme)
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+            setPadding(dp(FinanceDesignTokens.CARD_PADDING), dp(FinanceDesignTokens.SPACE_8),
+                dp(FinanceDesignTokens.CARD_PADDING), dp(FinanceDesignTokens.SPACE_8))
+        }
+        var mode = 0
+        var financialMode = 0
+        var resultForInsertion: String? = null
+        var resultLabel = ""
+        val history = mutableListOf<Pair<String, String>>()
+        val expression = FinanceDesignSystem.input(this, darkTheme, s(R.string.calculator_expression)).apply {
+            textDirection = View.TEXT_DIRECTION_LTR
+            textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+            isFocusable = false
+            isFocusableInTouchMode = false
+        }
+        fun numericField(hint: String) = FinanceDesignSystem.input(
+            this, darkTheme, hint, numeric = true
+        ).apply {
+            keyListener = DigitsKeyListener.getInstance("0123456789")
+            inputType = InputType.TYPE_CLASS_NUMBER
+            textDirection = View.TEXT_DIRECTION_LTR
+            textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+            setTextLocale(Locale.US)
+        }
+        val amount = numericField(s(R.string.calculator_amount))
+        val percent = numericField(s(R.string.calculator_percent))
+        val people = numericField(s(R.string.calculator_people))
+        val result = FinanceDesignSystem.text(
+            this, s(R.string.calculator_result_placeholder),
+            FinanceDesignTokens.TEXT_VALUE_SP, palette.accent, bold = true
+        ).apply {
+            textDirection = View.TEXT_DIRECTION_LTR
+            textAlignment = View.TEXT_ALIGNMENT_VIEW_END
+            setPadding(0, dp(FinanceDesignTokens.SPACE_8), 0, dp(FinanceDesignTokens.SPACE_8))
+        }
+        val modeRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+        }
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+        }
+        val historyPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+        }
+        fun label(text: String) = FinanceDesignSystem.text(
+            this, text, FinanceDesignTokens.TEXT_CAPTION_SP, palette.secondaryText, bold = true
+        )
+        fun refreshHistory() {
+            historyPanel.removeAllViews()
+            historyPanel.addView(label(s(R.string.calculator_history)))
+            history.takeLast(5).asReversed().forEach { pair ->
+                historyPanel.addView(FinanceDesignSystem.text(
+                    this, pair.first + " = " + pair.second,
+                    FinanceDesignTokens.TEXT_CAPTION_SP, palette.text
+                ).apply {
+                    textDirection = View.TEXT_DIRECTION_LTR
+                    setPadding(0, dp(FinanceDesignTokens.SPACE_4), 0, dp(FinanceDesignTokens.SPACE_4))
+                    isClickable = true
+                    setOnClickListener {
+                        if (mode == 0) {
+                            expression.setText(pair.first)
+                            result.text = pair.second
+                            resultLabel = pair.second
+                            resultForInsertion = pair.second.toBigIntegerOrNull()?.toString()
+                        }
+                    }
+                })
             }
-            .setNegativeButton(s(com.byepro.bye_pro_finance.R.string.cancel), null)
+        }
+        fun resetError() {
+            resultLabel = s(R.string.calculator_invalid_expression)
+            result.text = resultLabel
+            resultForInsertion = null
+        }
+        fun evaluateExpression() {
+            try {
+                val value = FinanceCalculatorEngine.evaluate(expression.text.toString())
+                resultLabel = FinanceCalculatorEngine.format(value)
+                result.text = resultLabel
+                resultForInsertion = FinanceCalculatorEngine.asInsertableAmount(value)
+                history.add(expression.text.toString() to resultLabel)
+                refreshHistory()
+            } catch (_: IllegalArgumentException) {
+                resetError()
+            } catch (_: ArithmeticException) {
+                resetError()
+            }
+        }
+        fun calculateFinancial() {
+            val entered = amount.text.toString().toBigIntegerOrNull()
+            if (entered == null || entered.signum() < 0) {
+                resetError()
+                return
+            }
+            when (financialMode) {
+                0 -> {
+                    val value = FinanceCalculatorEngine.percentage(entered, percent.text.toString())
+                    if (value == null) resetError() else {
+                        resultLabel = value.toString()
+                        resultForInsertion = resultLabel
+                    }
+                }
+                1 -> {
+                    val value = FinanceCalculatorEngine.discount(entered, percent.text.toString())
+                    if (value == null) resetError() else {
+                        resultLabel = value.toString()
+                        resultForInsertion = resultLabel
+                    }
+                }
+                else -> {
+                    val split = FinanceCalculatorEngine.split(entered, people.text.toString().toBigIntegerOrNull())
+                    if (split == null) resetError() else {
+                        resultLabel = s(R.string.calculator_per_person) + ": " + split.first +
+                            " • " + s(R.string.calculator_remainder) + ": " + split.second
+                        resultForInsertion = split.first.toString()
+                    }
+                }
+            }
+            if (resultForInsertion != null) {
+                result.text = resultLabel
+                val divisor = if (financialMode == 2) people.text.toString() else percent.text.toString()
+                history.add(amount.text.toString() + " / " + divisor to resultLabel)
+                refreshHistory()
+            }
+        }
+        fun keyButton(row: LinearLayout, key: String) {
+            row.addView(FinanceDesignSystem.button(this, darkTheme, key, primary = key == "=") {
+                when (key) {
+                    "AC" -> expression.setText("")
+                    "⌫" -> expression.setText(expression.text.toString().dropLast(1))
+                    "√" -> expression.append("√(")
+                    "x²" -> expression.append("^2")
+                    "±" -> {
+                        val current = expression.text.toString()
+                        expression.setText(if (current.startsWith("-")) current.drop(1) else "-(" + current + ")")
+                    }
+                    "=" -> evaluateExpression()
+                    else -> expression.append(key)
+                }
+            }, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.BUTTON_HEIGHT), 1f).apply {
+                marginEnd = dp(FinanceDesignTokens.SPACE_2)
+                bottomMargin = dp(FinanceDesignTokens.SPACE_2)
+            })
+        }
+        lateinit var rebuildPanel: () -> Unit
+        rebuildPanel = {
+            panel.removeAllViews()
+            modeRow.removeAllViews()
+            modeRow.addView(FinanceDesignSystem.button(
+                this, darkTheme, s(R.string.calculator_scientific), primary = mode == 0
+            ) { mode = 0; rebuildPanel() }, LinearLayout.LayoutParams(0,
+                dp(FinanceDesignTokens.BUTTON_HEIGHT), 1f))
+            modeRow.addView(FinanceDesignSystem.button(
+                this, darkTheme, s(R.string.calculator_financial), primary = mode == 1
+            ) { mode = 1; rebuildPanel() }, LinearLayout.LayoutParams(0,
+                dp(FinanceDesignTokens.BUTTON_HEIGHT), 1f).apply {
+                marginStart = dp(FinanceDesignTokens.SPACE_4)
+            })
+            content.removeAllViews()
+            content.addView(modeRow)
+            if (mode == 0) {
+                panel.addView(expression, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.BUTTON_HEIGHT)
+                ))
+                val keys = listOf(
+                    listOf("AC", "(", ")", "%", "⌫"),
+                    listOf("7", "8", "9", "÷", "√"),
+                    listOf("4", "5", "6", "×", "x²"),
+                    listOf("1", "2", "3", "−", "^"),
+                    listOf("0", ".", "±", "+", "=")
+                )
+                keys.forEach { rowKeys ->
+                    val row = LinearLayout(this).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        layoutDirection = View.LAYOUT_DIRECTION_LTR
+                    }
+                    rowKeys.forEach { key -> keyButton(row, key) }
+                    panel.addView(row)
+                }
+            } else {
+                val finModes = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    layoutDirection = View.LAYOUT_DIRECTION_RTL
+                }
+                listOf(
+                    s(R.string.calculator_percentage),
+                    s(R.string.calculator_discount),
+                    s(R.string.calculator_split)
+                ).forEachIndexed { index, title ->
+                    finModes.addView(FinanceDesignSystem.button(
+                        this, darkTheme, title, primary = financialMode == index
+                    ) { financialMode = index; rebuildPanel() },
+                        LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.BUTTON_HEIGHT), 1f).apply {
+                            marginEnd = dp(FinanceDesignTokens.SPACE_2)
+                        })
+                }
+                panel.addView(finModes)
+                panel.addView(label(s(R.string.calculator_amount)))
+                panel.addView(amount)
+                if (financialMode == 2) {
+                    panel.addView(label(s(R.string.calculator_people)))
+                    panel.addView(people)
+                } else {
+                    panel.addView(label(s(R.string.calculator_percent)))
+                    panel.addView(percent)
+                }
+                panel.addView(FinanceDesignSystem.button(
+                    this, darkTheme, s(R.string.calculator_calculate), primary = true
+                ) { calculateFinancial() }, LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.BUTTON_HEIGHT)
+                ))
+            }
+            panel.addView(result)
+            panel.addView(FinanceDesignSystem.button(
+                this, darkTheme, s(R.string.calculator_copy), primary = false
+            ) {
+                if (resultLabel.isNotBlank()) {
+                    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("calculator", resultLabel))
+                    showToast(s(R.string.calculator_copied))
+                }
+            }, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.BUTTON_HEIGHT)
+            ))
+            refreshHistory()
+            panel.addView(historyPanel)
+            content.addView(panel)
+        }
+        rebuildPanel()
+        dialogBuilder()
+            .setTitle(s(R.string.calculator))
+            .setView(ScrollView(this).apply { addView(content) })
+            .setNegativeButton(s(R.string.cancel), null)
+            .setPositiveButton(s(R.string.use_result)) { _, _ ->
+                val value = resultForInsertion
+                if (value != null) {
+                    if (onUseResult != null) onUseResult.invoke(value) else showToast(resultLabel)
+                } else if (resultLabel.isNotBlank()) showToast(resultLabel)
+            }
             .show()
     }
-
     private fun showSettings() {
         val options = arrayOf(
             s(R.string.appearance),
