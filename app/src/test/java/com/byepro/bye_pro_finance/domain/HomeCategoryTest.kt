@@ -9,10 +9,10 @@ class HomeCategoryTest {
     fun homeHasExactlyFourCategoriesInTheRequiredOrder() {
         assertEquals(
             listOf(
+                HomeCategory.RECEIVED_FROM_WORK,
                 HomeCategory.MONTHLY_BILLS,
                 HomeCategory.RENT,
-                HomeCategory.EXPENSES,
-                HomeCategory.RECEIVED_FROM_WORK
+                HomeCategory.EXPENSES
             ),
             HomeCategory.ordered
         )

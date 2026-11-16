@@ -26,6 +26,11 @@ enum class HomeCategory(
 
     companion object {
         /** The stable display/navigation order required by the Home section. */
-        val ordered: List<HomeCategory> = values().toList()
+        val ordered: List<HomeCategory> = listOf(
+            RECEIVED_FROM_WORK,
+            MONTHLY_BILLS,
+            RENT,
+            EXPENSES
+        )
     }
 }
