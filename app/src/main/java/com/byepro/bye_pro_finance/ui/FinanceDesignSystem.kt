@@ -21,11 +21,40 @@ import android.widget.TextView
  * cards, navigation items and dialog inputs use these tokens.
  */
 object FinanceDesignTokens {
-    const val PAGE_HORIZONTAL_PADDING = 16
-    const val PAGE_VERTICAL_PADDING = 12
-    const val SECTION_SPACING = 12
-    const val CARD_PADDING = 16
-    const val INPUT_VERTICAL_PADDING = 12
+    // Spacing scale (dp). Screen code must use these tokens, not raw dimensions.
+    const val SPACE_2 = 2
+    const val SPACE_4 = 4
+    const val SPACE_5 = 5
+    const val SPACE_6 = 6
+    const val SPACE_8 = 8
+    const val SPACE_12 = 12
+    const val SPACE_14 = 14
+    const val SPACE_16 = 16
+    const val SPACE_18 = 18
+    const val SPACE_24 = 24
+
+    // Semantic typography scale (sp).
+    const val TEXT_NAVIGATION_SP = 11f
+    const val TEXT_CAPTION_SP = 12f
+    const val TEXT_LABEL_SP = 13f
+    const val TEXT_BODY_SP = 14f
+    const val TEXT_INPUT_SP = 15f
+    const val TEXT_ACTION_SP = 15f
+    const val TEXT_AMOUNT_SP = 15f
+    const val TEXT_VALUE_SP = 16f
+    const val TEXT_SECTION_TITLE_SP = 16f
+    const val TEXT_PAGE_TITLE_SP = 20f
+
+    // Page and component geometry (dp).
+    const val PAGE_HORIZONTAL_PADDING = SPACE_16
+    const val PAGE_VERTICAL_PADDING = SPACE_12
+    const val SECTION_SPACING = SPACE_12
+    const val CARD_PADDING = SPACE_16
+    const val INPUT_HORIZONTAL_PADDING = SPACE_14
+    const val INPUT_VERTICAL_PADDING = SPACE_12
+    const val BUTTON_HORIZONTAL_PADDING = SPACE_18
+    const val COMPONENT_HORIZONTAL_PADDING = SPACE_12
+    const val COMPONENT_VERTICAL_PADDING = SPACE_8
     const val APP_BAR_HEIGHT = 56
     const val CARD_RADIUS = 16
     const val CONTROL_RADIUS = 12
@@ -33,13 +62,31 @@ object FinanceDesignTokens {
     const val BUTTON_HEIGHT = 48
     const val TOUCH_TARGET_SIZE = 44
     const val NAVIGATION_BAR_HEIGHT = 68
+    const val NAVIGATION_HORIZONTAL_PADDING = SPACE_4
+    const val NAVIGATION_VERTICAL_PADDING = SPACE_4
+    const val NAVIGATION_ITEM_PADDING = SPACE_2
+    const val NAVIGATION_ICON_SLOT_WIDTH = 38
+    const val NAVIGATION_ICON_SLOT_HEIGHT = 30
+    const val NAVIGATION_LABEL_HEIGHT = 20
+    const val NAVIGATION_CONTENT_HEIGHT = NAVIGATION_BAR_HEIGHT - 8
     const val SECTION_TAB_HEIGHT = 48
     const val SECTION_HEADER_HEIGHT = 36
     const val METRIC_TILE_MIN_HEIGHT = 64
     const val RECORD_ICON_BOX_SIZE = 40
     const val STANDARD_ICON_SIZE = 20
     const val DIVIDER_HEIGHT = 1
+    const val LIST_DIVIDER_START_INSET = 56
     const val RECORD_ROW_HEIGHT = 64
+    const val EMPTY_STATE_VERTICAL_PADDING = SPACE_24
+    const val MULTILINE_INPUT_HEIGHT = 80
+
+    // Comparison chart geometry (dp).
+    const val CHART_LABEL_ROW_HEIGHT = 24
+    const val CHART_BAR_HEIGHT = 7
+    const val CHART_BAR_RADIUS_DP = 5f
+    const val CHART_BAR_TOP_GAP = SPACE_5
+    const val CHART_HORIZONTAL_INSET = 72
+    const val CHART_MIN_VISIBLE_FILL = 3
     const val MOTION_DURATION_MS = 160L
 }
 
@@ -106,7 +153,7 @@ object FinanceDesignSystem {
     fun text(
         context: Context,
         value: CharSequence,
-        sizeSp: Float = 14f,
+        sizeSp: Float = FinanceDesignTokens.TEXT_BODY_SP,
         color: Int = colors(
             (context.resources.configuration.uiMode and
                 android.content.res.Configuration.UI_MODE_NIGHT_MASK) !=
@@ -142,12 +189,12 @@ object FinanceDesignSystem {
     }
 
     fun sectionTitle(context: Context, value: String, isDark: Boolean): TextView =
-        text(context, value, 16f, colors(isDark).text, bold = true).apply {
-            setPadding(0, dp(context, 4), 0, dp(context, 8))
+        text(context, value, FinanceDesignTokens.TEXT_SECTION_TITLE_SP, colors(isDark).text, bold = true).apply {
+            setPadding(0, dp(context, FinanceDesignTokens.SPACE_4), 0, dp(context, FinanceDesignTokens.SPACE_8))
             minHeight = dp(context, FinanceDesignTokens.SECTION_HEADER_HEIGHT)
         }
 
-    fun divider(context: Context, isDark: Boolean, startInset: Int = 56): View =
+    fun divider(context: Context, isDark: Boolean, startInset: Int = FinanceDesignTokens.LIST_DIVIDER_START_INSET): View =
         View(context).apply {
             setBackgroundColor(colors(isDark).divider)
             layoutParams = LinearLayout.LayoutParams(
@@ -224,7 +271,7 @@ object FinanceDesignSystem {
     ): EditText = EditText(context).apply {
         this.hint = hint
         setText(initialValue)
-        textSize = 15f
+        textSize = FinanceDesignTokens.TEXT_INPUT_SP
         setTextColor(colors(isDark).text)
         setHintTextColor(colors(isDark).secondaryText)
         background = rounded(
@@ -233,8 +280,8 @@ object FinanceDesignSystem {
             FinanceDesignTokens.CONTROL_RADIUS
         )
         setPadding(
-            dp(context, 14), dp(context, FinanceDesignTokens.INPUT_VERTICAL_PADDING),
-            dp(context, 14), dp(context, FinanceDesignTokens.INPUT_VERTICAL_PADDING)
+            dp(context, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING), dp(context, FinanceDesignTokens.INPUT_VERTICAL_PADDING),
+            dp(context, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING), dp(context, FinanceDesignTokens.INPUT_VERTICAL_PADDING)
         )
         minHeight = dp(context, FinanceDesignTokens.BUTTON_HEIGHT)
         inputType = when {
@@ -260,13 +307,13 @@ object FinanceDesignSystem {
         return text(
             context,
             label,
-            15f,
+            FinanceDesignTokens.TEXT_ACTION_SP,
             if (primary) palette.onAccent else palette.accent,
             bold = true
         ).apply {
             gravity = Gravity.CENTER
             minHeight = dp(context, FinanceDesignTokens.BUTTON_HEIGHT)
-            setPadding(dp(context, 18), 0, dp(context, 18), 0)
+            setPadding(dp(context, FinanceDesignTokens.BUTTON_HORIZONTAL_PADDING), 0, dp(context, FinanceDesignTokens.BUTTON_HORIZONTAL_PADDING), 0)
             background = rounded(
                 context,
                 if (primary) palette.accent else palette.accentSoft,
