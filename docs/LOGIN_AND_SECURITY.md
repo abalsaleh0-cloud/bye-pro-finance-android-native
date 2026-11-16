@@ -7,7 +7,7 @@
 
 ## 1. Required launch flow
 
-Every fresh application process starts with this order:
+Every fresh application process starts with this order (returning from the Android app switcher does not by itself prove a new login session):
 
 1. **Welcome screen** — shows the BYE PRO Finance introduction.
 2. **Continue by swipe or button** — a horizontal swipe or the Continue action moves to the next stage.
@@ -20,7 +20,7 @@ The welcome and login screens use the same Design System tokens, palette, RTL la
 
 ## 2. Initial credentials
 
-On the first Native installation, or the first startup after upgrading a Native database that has no local-authentication profile, the application initializes:
+On the first Native installation, or the first startup after opening a compatible database that has no saved local-authentication salt/verifier, the application initializes:
 
 | Field | Initial value |
 |---|---|
@@ -103,7 +103,13 @@ The existing SQLite database remains in Android's private application storage. P
 
 There is no password-recovery flow in this stage. Keep the updated credentials safely. Do not clear app data or uninstall the app as a way to reset the password; doing so can remove local finance data. Any future recovery feature must be designed separately and must not silently erase records.
 
-## 7. Implementation and tests
+## 7. Design System and Arabic/English behaviour
+
+The Welcome and Login screens are not visually separate from the application. They use the same semantic colors, page/card spacing, typography, input height, button height, corner radii and ripple helpers documented in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md). The screen direction remains RTL in both languages; English changes resource text only.
+
+The Welcome screen supports both the visible Continue button and a horizontal swipe gesture. The Login form pre-fills the current username, masks the password field and shows a localized error without opening the app when credentials are incorrect.
+
+## 8. Implementation and tests
 
 | Concern | Implementation |
 |---|---|
@@ -124,3 +130,19 @@ Required test cases:
 - Startup does not overwrite existing credential or enabled/disabled state.
 
 A successful unit test or debug APK build verifies implementation behaviour in the configured test environment. Device acceptance must still check swipe gestures, keyboard behaviour, password masking, rotation/re-entry, Arabic/English text and both appearance modes.
+
+
+## 9. Manual device acceptance checklist
+
+- [ ] Fresh process opens Welcome first.
+- [ ] Tapping Continue opens Login while login protection is enabled.
+- [ ] Horizontal swipe on the Welcome surface also continues.
+- [ ] `admin` / `admin` succeeds only while the initial profile is still unchanged.
+- [ ] Incorrect username or password remains on Login and displays the localized error.
+- [ ] Password is visually masked and the keyboard does not obscure the form on the target phone.
+- [ ] Settings can change the username and password only after the current password is supplied.
+- [ ] Password confirmation mismatch is rejected.
+- [ ] Disabling login takes effect after a fresh process launch and does not delete the stored profile.
+- [ ] Re-enabling login requires the current saved credentials after a fresh process launch.
+- [ ] Repeat the checks in Arabic and English and in Light and Dark appearance modes.
+- [ ] Confirm existing finance records remain untouched after changing login settings.
