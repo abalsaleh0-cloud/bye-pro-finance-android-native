@@ -69,6 +69,34 @@ class FinanceDesignSystemTest {
         assertTrue(contrast(FinanceDesignSystem.dark.onAccent, FinanceDesignSystem.dark.accent) >= 4.5)
     }
 
+    @Test
+    fun semanticTypographyAndSpacingRemainCentralized() {
+        assertEquals(2, FinanceDesignTokens.SPACE_2)
+        assertEquals(4, FinanceDesignTokens.SPACE_4)
+        assertEquals(8, FinanceDesignTokens.SPACE_8)
+        assertEquals(12, FinanceDesignTokens.SPACE_12)
+        assertEquals(16, FinanceDesignTokens.SPACE_16)
+        assertEquals(24, FinanceDesignTokens.SPACE_24)
+
+        assertEquals(11f, FinanceDesignTokens.TEXT_NAVIGATION_SP)
+        assertEquals(12f, FinanceDesignTokens.TEXT_CAPTION_SP)
+        assertEquals(13f, FinanceDesignTokens.TEXT_LABEL_SP)
+        assertEquals(14f, FinanceDesignTokens.TEXT_BODY_SP)
+        assertEquals(15f, FinanceDesignTokens.TEXT_INPUT_SP)
+        assertEquals(16f, FinanceDesignTokens.TEXT_VALUE_SP)
+        assertEquals(20f, FinanceDesignTokens.TEXT_PAGE_TITLE_SP)
+    }
+
+    @Test
+    fun chartAndSharedComponentsUseApprovedGeometry() {
+        assertEquals(24, FinanceDesignTokens.CHART_LABEL_ROW_HEIGHT)
+        assertEquals(7, FinanceDesignTokens.CHART_BAR_HEIGHT)
+        assertEquals(5f, FinanceDesignTokens.CHART_BAR_RADIUS_DP)
+        assertEquals(72, FinanceDesignTokens.CHART_HORIZONTAL_INSET)
+        assertEquals(FinanceDesignTokens.TOUCH_TARGET_SIZE, 44)
+        assertEquals(FinanceDesignTokens.NAVIGATION_BAR_HEIGHT, 68)
+    }
+
     private fun contrast(foreground: Int, background: Int): Double {
         fun channel(value: Int): Double {
             val sRgb = value / 255.0
