@@ -1,7 +1,7 @@
 # Native Implementation Status
 
 **Repository:** `abalsaleh0-cloud/bye-pro-finance-android-native`  
-**Baseline:** standalone Kotlin Native extraction, version configured as `1.1.56 (157)`
+**Baseline:** standalone Kotlin Native extraction, version configured as `1.1.57 (158)`
 
 This file separates implemented work from incomplete work. A task is not marked complete solely because code exists or a debug build succeeds.
 
@@ -12,13 +12,15 @@ This file separates implemented work from incomplete work. A task is not marked 
 - [x] Five destinations: Dashboard, Work, Home, Debts and AI.
 - [x] Central design token object for spacing, typography, radii and dimensions.
 - [x] Shared Light and Dark semantic palettes.
-- [x] Shared components for app bar, navigation, section heading, month selector, category tabs/description, metric row, record row, grouped list, card, empty state and divider.
-- [x] Three Home categories in the required order, with explicit domain mapping to monthly bills, rent and household expenses.
-- [x] Welcome screen with Continue button and horizontal swipe, followed by optional login.
+- [x] Shared components for app bar, navigation, section heading, month selector, numbered editorial category index, metric row, record row, grouped list, card, empty state and divider.
+- [x] Four Home routes in order: monthly bills, monthly rent (الإيجارات الشهرية), household expenses and received from Work. The fourth route reads real `work_home_transfers` records and displays their monthly total.
+- [x] Five Work routes in order: Salary, Payment, Advance, Remaining and Home Transfers, with four Add actions only. Remaining is a calculated view.
+- [x] Work and Home use the same numbered editorial index instead of segmented tabs.
+- [x] Non-card Welcome and Login compositions with original finance-orbit artwork and open underlined login fields.
 - [x] Local login initialized with `admin` / `admin` when no saved profile exists.
 - [x] Settings flow to change username/password and enable or disable login protection.
 - [x] Login profile persists in `app_settings`; password is stored only as a salted PBKDF2 verifier.
-- [x] Automated Home-category mapping tests and local-authentication behaviour tests.
+- [x] Automated four-route Home mapping tests, five-route Work mapping tests and local-authentication behaviour tests.
 - [x] CI parity checker for Kotlin palette vs Android XML resources, core dimensions and screen-local styling guardrails.
 - [x] Appearance modes: System, Light and Dark.
 - [x] Arabic default strings and English string resources.
@@ -34,13 +36,13 @@ This file separates implemented work from incomplete work. A task is not marked 
 - [ ] UI test coverage: current unit tests cover design tokens, palette contrast and appearance rules; full screen/device screenshot coverage is not present.
 - [ ] Financial-rule regression coverage: repository operations exist, but full automated coverage of all balance, debt, bill and payment paths is still required.
 - [ ] Navigation and form interactions: require full device walkthrough in both themes and both languages.
-- [ ] Welcome swipe, login keyboard/masking, login toggle on fresh process launch, and all three Home Add flows require real-device acceptance.
+- [ ] Welcome swipe, login keyboard/masking, login toggle on fresh process launch, all four Home routes/Add flows, all five Work routes/four Add actions and balance totals require real-device acceptance.
 
 ## Current CI status and immediate verification
 
-- The previous CI run (`43929573545`) failed during Gradle plugin resolution before unit tests ran; it did not report a Kotlin source or test failure.
-- The development branch upgrades the Kotlin Gradle Plugin to `2.4.21` and must pass a new CI run before any automated build/test item is marked verified.
-- The Native version is incremented to `1.1.56 (157)` for this development update. No production APK has been approved or issued.
+- The latest completed run before the current changes (`43941131356`) passed unit tests and Kotlin compilation but exposed a false positive in the geometry/font-size guard. The guard was corrected to distinguish numeric drawing ratios from text sizes.
+- The current run (`43942352286`) must pass unit tests, the Design System checker, application identity validation and APK assembly before the updated preview is considered verified.
+- Native version is `1.1.57 (158)` for this development update. The current CI run (`43942352286`) is pending; do not mark the latest APK as verified until all steps pass. No production APK has been approved or issued.
 
 ## Not yet proven / release blockers
 
