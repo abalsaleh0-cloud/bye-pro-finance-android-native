@@ -186,6 +186,8 @@ Use these components; do not recreate their visual styling inside a screen.
 | Grouped list | `FinanceComponents.groupedList` | Shared list surface with consistent separators |
 | Content card | `FinanceComponents.card` | Padded surface for chart/panel content |
 | Empty state | `FinanceComponents.emptyState` | Shared empty-result message treatment |
+| Category tabs | `FinanceComponents.categoryTabs` | Equal-width, three-way selection control for Home categories |
+| Category description | `FinanceComponents.categoryDescription` | Consistent explanatory text below the Home category selector |
 | Divider | `FinanceComponents.bottomDivider` | Shared one-pixel separator |
 | Text, input, button, surface and icon helpers | `FinanceDesignSystem` | Primitive styling building blocks |
 
@@ -205,11 +207,23 @@ The app has five top-level destinations:
 
 1. **الرئيسية (Dashboard):** monthly selector, financial metric groups, cash-flow comparison and recent activity.
 2. **العمل (Work):** salary, advances and work-payment records.
-3. **المنزل (Home):** transfers, home expenses and bills.
+3. **المنزل (Home):** exactly three primary categories, in this order:
+   - **الفواتير الشهرية:** electricity, water, gas, internet, phone, recurring services and subscriptions. Reads bill rows whose `home_bills.kind` is `monthly`.
+   - **الإيجار:** housing rent obligations, due amount, paid installments and payment history. Reads bill rows whose `home_bills.kind` is `rent`.
+   - **المصروفات:** groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses. Reads `home_expenses` rows.
+
+   The three categories are mutually exclusive tabs. The selected category controls the Add action and data query; do not combine Home with Work or add a fourth Home category.
 4. **الديون (Debts):** creditor/debtor records and payment actions.
 5. **الذكاء الاصطناعي (AI):** the current Native build displays a migration notice; full assistant integration is not yet complete.
 
 A section may arrange approved components differently to suit its data, but may not create a new visual language. Keep Work and Home as separate destinations; do not combine their data into one section.
+
+### Welcome and login entry surfaces
+
+- Every fresh application process starts on the Welcome screen.
+- The Welcome screen continues through the shared primary button or a horizontal swipe gesture.
+- When login protection is enabled, the next screen is Login; otherwise the app opens directly.
+- Welcome and Login use the same palette, card, typography, spacing, text-field and button helpers as the rest of the app. They are not a separate theme or a one-off design.
 
 ## 8. Interaction, RTL and accessibility
 
@@ -221,6 +235,8 @@ A section may arrange approved components differently to suit its data, but may 
 - Do not change financial values or persistence logic as part of a visual styling change.
 - Keep labels readable, avoid truncation of amounts, and allow long transaction titles to wrap where appropriate.
 - Test both Light and Dark modes and both languages at phone-sized widths.
+- Check the Welcome swipe and Continue button, Login error state, masked password field, and the exact three Home categories.
+- Confirm each Home category's Add action writes to its correct data source.
 
 ## 9. Prohibited patterns
 
