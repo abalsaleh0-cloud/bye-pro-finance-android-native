@@ -206,24 +206,31 @@ Use these components; do not recreate their visual styling inside a screen.
 The app has five top-level destinations:
 
 1. **الرئيسية (Dashboard):** monthly selector, financial metric groups, cash-flow comparison and recent activity.
-2. **العمل (Work):** salary, advances and work-payment records.
-3. **المنزل (Home):** exactly three primary categories, in this order:
-   - **الفواتير الشهرية:** electricity, water, gas, internet, phone, recurring services and subscriptions. Reads bill rows whose `home_bills.kind` is `monthly`.
-   - **الإيجار:** housing rent obligations, due amount, paid installments and payment history. Reads bill rows whose `home_bills.kind` is `rent`.
-   - **المصروفات:** groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses. Reads `home_expenses` rows.
+2. **العمل (Work):** five independent routes using the shared numbered editorial index:
+   - **الراتب:** salary records for the selected month.
+   - **الدفعة:** payments deducted from salary, including legacy `salaryPayment` records.
+   - **السلفة:** advances recorded against salary.
+   - **الباقي:** calculated balance (salary minus payments and advances); it is a view, not an Add action.
+   - **تحويلات المنزل:** work-to-home transfer records.
+3. **المنزل (Home):** four independent routes using the same numbered editorial index:
+   - **الفواتير الشهرية:** electricity, water, gas, internet, phone, recurring services and subscriptions. Reads `home_bills.kind = monthly`.
+   - **الإيجارات الشهرية:** housing rent obligations, due amount, paid installments and payment history. Reads `home_bills.kind = rent`.
+   - **المصروفات:** groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses. Reads `home_expenses`.
+   - **الوارد من العمل:** amounts actually transferred from Work to Home. Reads `work_home_transfers`, filtered to the selected month.
 
-   The three categories are mutually exclusive tabs. The selected category controls the Add action and data query; do not combine Home with Work or add a fourth Home category.
+   Work Add always offers salary, payment, advance and transfer to Home. Home Add always offers monthly bill, monthly rent and expense, regardless of the selected route. The "Remaining" and "From Work" routes display existing or calculated data and do not create another money record.
 4. **الديون (Debts):** creditor/debtor records and payment actions.
 5. **الذكاء الاصطناعي (AI):** the current Native build displays a migration notice; full assistant integration is not yet complete.
 
 A section may arrange approved components differently to suit its data, but may not create a new visual language. Keep Work and Home as separate destinations; do not combine their data into one section.
 
-### Welcome and login entry surfaces
+### Signature Welcome and Login entry surfaces
 
-- Every fresh application process starts on the Welcome screen.
-- The Welcome screen continues through the shared primary button or a horizontal swipe gesture.
-- When login protection is enabled, the next screen is Login; otherwise the app opens directly.
-- Welcome and Login use the same palette, card, typography, spacing, text-field and button helpers as the rest of the app. They are not a separate theme or a one-off design.
+- Every fresh process starts on Welcome.
+- Welcome is an editorial, full-surface composition: BYE PRO signature, original finance-orbit artwork, strong statement typography, a progress rule and an entry action. It is not a centered card.
+- Login has a separate access-focused composition, the same custom artwork language and open underlined fields. It is not a generic centered login card or boxed stock form.
+- The Welcome action and horizontal swipe both continue. Login follows only while local login protection is enabled.
+- The artwork is drawn natively from the shared light/dark semantic palette; Arabic/English keep the same RTL geometry.
 
 ## 8. Interaction, RTL and accessibility
 
