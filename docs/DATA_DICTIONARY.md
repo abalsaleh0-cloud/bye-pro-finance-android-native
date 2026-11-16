@@ -121,14 +121,25 @@ Application rule: the Native writer prevents deleting a debt that has payment hi
 
 ### `app_settings`
 
-Stores simple app preferences.
+Stores simple app preferences and the device-local login profile.
 
 | Column | SQLite type | Rule / meaning |
 |---|---|---|
 | `setting_key` | TEXT | Primary key |
 | `setting_value` | TEXT | Required value |
 
-Current Native preferences include `locale` and `theme_mode`. Startup removes only these obsolete appearance keys: `theme_id`, `custom_themes`, and `appearance_preset`. Unknown settings and finance data are retained.
+Current Native preference and login keys include:
+
+| Key | Purpose |
+|---|---|
+| `locale` | Arabic (`ar`, default) or English (`en`) text resources |
+| `theme_mode` | `system`, `light` or `dark` |
+| `local_auth_username` | Current local username |
+| `local_auth_salt` | Base64-encoded random password salt |
+| `local_auth_password_hash` | Base64-encoded PBKDF2-HMAC-SHA256 verifier; never the readable password |
+| `local_auth_enabled` | `true` or `false` login-protection preference |
+
+Startup removes only these obsolete appearance keys: `theme_id`, `custom_themes`, and `appearance_preset`. Unknown settings and finance data are retained. Login settings are written through `LocalAuthentication`; the Home category mapping is documented in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## 3. Relationships
 
