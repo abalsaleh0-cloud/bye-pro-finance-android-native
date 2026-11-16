@@ -14,6 +14,7 @@ import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.ViewGroup
 import android.view.MotionEvent
+import android.view.WindowManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -132,109 +133,108 @@ class MainActivity : Activity() {
         val screen = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             layoutDirection = View.LAYOUT_DIRECTION_RTL
-            gravity = Gravity.CENTER
+            gravity = Gravity.CENTER_VERTICAL
             setPadding(
                 dp(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
                 dp(FinanceDesignTokens.PAGE_VERTICAL_PADDING),
                 dp(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
                 dp(FinanceDesignTokens.PAGE_VERTICAL_PADDING)
             )
-            setBackgroundColor(palette.background)
+            background = ColorDrawable(palette.background)
         }
-
-        val panel = FinanceComponents.card(this, darkTheme)
-        val mark = FinanceDesignSystem.iconBox(
-            this,
-            darkTheme,
-            R.drawable.ic_bye_pro_finance,
-            selected = true
-        )
-        panel.addView(mark, LinearLayout.LayoutParams(
-            dp(FinanceDesignTokens.WELCOME_ICON_SIZE),
-            dp(FinanceDesignTokens.WELCOME_ICON_SIZE)
-        ).apply {
-            gravity = Gravity.CENTER_HORIZONTAL
-            bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING)
-        })
-        panel.addView(FinanceDesignSystem.text(
-            this,
-            s(R.string.welcome_title),
-            FinanceDesignTokens.TEXT_PAGE_TITLE_SP,
-            palette.text,
-            bold = true
-        ).apply {
-            gravity = Gravity.CENTER
-            textAlignment = View.TEXT_ALIGNMENT_CENTER
-        })
-        panel.addView(FinanceDesignSystem.text(
-            this,
-            s(R.string.welcome_description),
-            FinanceDesignTokens.TEXT_BODY_SP,
-            palette.secondaryText
-        ).apply {
-            gravity = Gravity.CENTER
-            textAlignment = View.TEXT_ALIGNMENT_CENTER
-            setPadding(
-                0,
-                dp(FinanceDesignTokens.SECTION_SPACING),
-                0,
-                dp(FinanceDesignTokens.SECTION_SPACING)
-            )
-        })
-        panel.addView(FinanceDesignSystem.button(
-            this,
-            darkTheme,
-            s(R.string.continue_to_login),
-            primary = true
-        ) {
-            continueFromWelcome()
-        }, LinearLayout.LayoutParams(
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+        }
+        content.addView(FinanceComponents.brandSignature(
+            this, darkTheme, R.drawable.ic_bye_pro_finance,
+            s(R.string.entry_brand_meta), s(R.string.welcome_step)
+        ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            dp(FinanceDesignTokens.BUTTON_HEIGHT)
+            dp(FinanceDesignTokens.ENTRY_BRAND_ROW_HEIGHT)
         ))
-        panel.addView(FinanceDesignSystem.text(
-            this,
-            s(R.string.swipe_to_continue),
-            FinanceDesignTokens.TEXT_CAPTION_SP,
-            palette.secondaryText
-        ).apply {
-            gravity = Gravity.CENTER
-            setPadding(
-                0,
-                dp(FinanceDesignTokens.SPACE_12),
-                0,
-                0
-            )
-        })
-
-        screen.addView(panel, LinearLayout.LayoutParams(
+        val artwork = FinanceComponents.entryArtwork(this, darkTheme, R.drawable.ic_bye_pro_finance)
+        content.addView(artwork, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            dp(FinanceDesignTokens.ENTRY_ARTWORK_HEIGHT)
+        ).apply {
+            topMargin = dp(FinanceDesignTokens.SPACE_8)
+            bottomMargin = dp(FinanceDesignTokens.SPACE_8)
+        })
+        content.addView(FinanceDesignSystem.text(
+            this, s(R.string.welcome_kicker),
+            FinanceDesignTokens.TEXT_ENTRY_KICKER_SP, palette.accent, bold = true
+        ).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, dp(FinanceDesignTokens.SPACE_4), 0, dp(FinanceDesignTokens.SPACE_4))
+        })
+        content.addView(FinanceDesignSystem.text(
+            this, s(R.string.welcome_title),
+            FinanceDesignTokens.TEXT_ENTRY_TITLE_SP, palette.text, bold = true
+        ).apply {
+            setLineSpacing(dp(FinanceDesignTokens.SPACE_4).toFloat(), 1f)
+            setPadding(0, dp(FinanceDesignTokens.SPACE_4), 0, dp(FinanceDesignTokens.SPACE_8))
+        })
+        content.addView(FinanceDesignSystem.text(
+            this, s(R.string.welcome_description),
+            FinanceDesignTokens.TEXT_BODY_SP, palette.secondaryText
+        ).apply {
+            setLineSpacing(dp(FinanceDesignTokens.SPACE_4).toFloat(), 1f)
+            setPadding(0, 0, 0, dp(FinanceDesignTokens.SPACE_16))
+        })
+        val progress = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+        }
+        progress.addView(FinanceDesignSystem.text(
+            this, s(R.string.welcome_step),
+            FinanceDesignTokens.TEXT_CAPTION_SP, palette.secondaryText, bold = true
+        ))
+        progress.addView(View(this).apply { setBackgroundColor(palette.divider) },
+            LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.DIVIDER_HEIGHT), 1f).apply {
+                marginStart = dp(FinanceDesignTokens.SPACE_12)
+                marginEnd = dp(FinanceDesignTokens.SPACE_12)
+            })
+        progress.addView(FinanceDesignSystem.text(
+            this, s(R.string.swipe_to_continue),
+            FinanceDesignTokens.TEXT_CAPTION_SP, palette.secondaryText
+        ))
+        screen.addView(content, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ))
+        screen.addView(progress, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.ENTRY_FOOTER_HEIGHT)
+        ).apply {
+            topMargin = dp(FinanceDesignTokens.SPACE_8)
+            bottomMargin = dp(FinanceDesignTokens.SPACE_8)
+        })
+        screen.addView(FinanceDesignSystem.button(
+            this, darkTheme, s(R.string.continue_to_login), primary = true
+        ) { continueFromWelcome() }, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.BUTTON_HEIGHT)
         ))
         var startX = 0f
         var startY = 0f
-        screen.setOnTouchListener { _, event ->
+        val swipe = View.OnTouchListener { _, event ->
             when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    startX = event.x
-                    startY = event.y
-                    false
-                }
+                MotionEvent.ACTION_DOWN -> { startX = event.x; startY = event.y; false }
                 MotionEvent.ACTION_UP -> {
-                    val deltaX = event.x - startX
-                    val deltaY = event.y - startY
-                    if (kotlin.math.abs(deltaX) >= dp(FinanceDesignTokens.SWIPE_THRESHOLD) &&
-                        kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY)
+                    val dx = event.x - startX
+                    val dy = event.y - startY
+                    if (kotlin.math.abs(dx) >= dp(FinanceDesignTokens.SWIPE_THRESHOLD) &&
+                        kotlin.math.abs(dx) > kotlin.math.abs(dy)
                     ) {
                         continueFromWelcome()
                         true
-                    } else {
-                        false
-                    }
+                    } else false
                 }
                 else -> false
             }
         }
+        screen.setOnTouchListener(swipe)
+        content.setOnTouchListener(swipe)
+        artwork.setOnTouchListener(swipe)
         setContentView(screen)
     }
 
@@ -249,105 +249,107 @@ class MainActivity : Activity() {
 
     private fun showLoginScreen() {
         entryStage = EntryStage.LOGIN
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         val palette = FinanceDesignSystem.colors(darkTheme)
-        val screen = LinearLayout(this).apply {
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+            isVerticalScrollBarEnabled = false
+            overScrollMode = View.OVER_SCROLL_NEVER
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+            setBackgroundColor(palette.background)
+        }
+        val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             layoutDirection = View.LAYOUT_DIRECTION_RTL
-            gravity = Gravity.CENTER
             setPadding(
                 dp(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
                 dp(FinanceDesignTokens.PAGE_VERTICAL_PADDING),
                 dp(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
                 dp(FinanceDesignTokens.PAGE_VERTICAL_PADDING)
             )
-            setBackgroundColor(palette.background)
         }
-        val panel = FinanceComponents.card(this, darkTheme)
-        panel.addView(FinanceDesignSystem.text(
-            this,
-            s(R.string.login_title),
-            FinanceDesignTokens.TEXT_PAGE_TITLE_SP,
-            palette.text,
-            bold = true
-        ).apply {
-            gravity = Gravity.CENTER
-            textAlignment = View.TEXT_ALIGNMENT_CENTER
-        })
-        panel.addView(FinanceDesignSystem.text(
-            this,
-            s(R.string.login_description),
-            FinanceDesignTokens.TEXT_BODY_SP,
-            palette.secondaryText
-        ).apply {
-            gravity = Gravity.CENTER
-            textAlignment = View.TEXT_ALIGNMENT_CENTER
-            setPadding(0, dp(FinanceDesignTokens.SPACE_8), 0,
-                dp(FinanceDesignTokens.SECTION_SPACING))
-        })
-
-        val username = FinanceDesignSystem.input(
-            this,
-            darkTheme,
-            s(R.string.username),
-            initialValue = localAuthentication.currentUsername()
-        )
-        panel.addView(username, LinearLayout.LayoutParams(
+        content.addView(FinanceComponents.brandSignature(
+            this, darkTheme, R.drawable.ic_bye_pro_finance,
+            s(R.string.entry_brand_meta), s(R.string.login_kicker)
+        ), LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            dp(FinanceDesignTokens.BUTTON_HEIGHT)
+            dp(FinanceDesignTokens.ENTRY_BRAND_ROW_HEIGHT)
+        ))
+        content.addView(FinanceComponents.entryArtwork(
+            this, darkTheme, R.drawable.ic_bye_pro_finance
+        ), LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(FinanceDesignTokens.ENTRY_LOGIN_ARTWORK_HEIGHT)
         ).apply {
-            bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING / 2)
+            topMargin = dp(FinanceDesignTokens.SPACE_4)
+            bottomMargin = dp(FinanceDesignTokens.SPACE_4)
         })
-
-        val password = FinanceDesignSystem.input(
-            this,
-            darkTheme,
-            s(R.string.password)
+        content.addView(FinanceDesignSystem.text(
+            this, s(R.string.login_kicker),
+            FinanceDesignTokens.TEXT_ENTRY_KICKER_SP, palette.accent, bold = true
+        ).apply { setPadding(0, dp(FinanceDesignTokens.SPACE_4), 0, dp(FinanceDesignTokens.SPACE_4)) })
+        content.addView(FinanceDesignSystem.text(
+            this, s(R.string.login_title),
+            FinanceDesignTokens.TEXT_ENTRY_TITLE_SP, palette.text, bold = true
         ).apply {
+            setLineSpacing(dp(FinanceDesignTokens.SPACE_4).toFloat(), 1f)
+            setPadding(0, dp(FinanceDesignTokens.SPACE_4), 0, dp(FinanceDesignTokens.SPACE_4))
+        })
+        content.addView(FinanceDesignSystem.text(
+            this, s(R.string.login_description),
+            FinanceDesignTokens.TEXT_BODY_SP, palette.secondaryText
+        ).apply { setPadding(0, 0, 0, dp(FinanceDesignTokens.SPACE_12)) })
+
+        val username = FinanceComponents.editorialInput(
+            this, darkTheme, s(R.string.username), s(R.string.username),
+            localAuthentication.currentUsername()
+        )
+        content.addView(username.container, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { bottomMargin = dp(FinanceDesignTokens.ENTRY_FIELD_BOTTOM_SPACE) })
+
+        val passwordField = FinanceComponents.editorialInput(
+            this, darkTheme, s(R.string.password), s(R.string.password)
+        )
+        val password = passwordField.input.apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
         }
-        panel.addView(password, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            dp(FinanceDesignTokens.BUTTON_HEIGHT)
-        ).apply {
-            bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING / 2)
-        })
+        content.addView(passwordField.container, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { bottomMargin = dp(FinanceDesignTokens.SPACE_4) })
 
-        val errorMessage = FinanceDesignSystem.text(
-            this,
-            "",
-            FinanceDesignTokens.TEXT_CAPTION_SP,
-            palette.danger
+        val error = FinanceDesignSystem.text(
+            this, "", FinanceDesignTokens.TEXT_CAPTION_SP, palette.danger
         ).apply {
-            gravity = Gravity.CENTER
-            textAlignment = View.TEXT_ALIGNMENT_CENTER
-            minHeight = dp(FinanceDesignTokens.SECTION_HEADER_HEIGHT)
+            gravity = Gravity.CENTER_VERTICAL
+            minHeight = dp(FinanceDesignTokens.ENTRY_ERROR_HEIGHT)
         }
-        panel.addView(errorMessage)
-        panel.addView(FinanceDesignSystem.button(
-            this,
-            darkTheme,
-            s(R.string.login),
-            primary = true
+        content.addView(error)
+        content.addView(FinanceDesignSystem.button(
+            this, darkTheme, s(R.string.login), primary = true
         ) {
-            if (localAuthentication.authenticate(
-                    username.text.toString(),
-                    password.text.toString()
-                )
-            ) {
+            if (localAuthentication.authenticate(username.input.text.toString(), password.text.toString())) {
                 enterApplication()
             } else {
                 password.text?.clear()
-                errorMessage.text = s(R.string.login_invalid)
+                error.text = s(R.string.login_invalid)
+                password.requestFocus()
             }
         }, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            dp(FinanceDesignTokens.BUTTON_HEIGHT)
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.BUTTON_HEIGHT)
+        ).apply { topMargin = dp(FinanceDesignTokens.SPACE_4) })
+        content.addView(FinanceDesignSystem.text(
+            this, s(R.string.login_security_note),
+            FinanceDesignTokens.TEXT_CAPTION_SP, palette.secondaryText
+        ).apply {
+            gravity = Gravity.CENTER
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+            setPadding(0, dp(FinanceDesignTokens.SPACE_12), 0, dp(FinanceDesignTokens.SPACE_8))
+        })
+        scroll.addView(content, ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         ))
-        screen.addView(panel, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ))
-        setContentView(screen)
+        setContentView(scroll)
     }
 
     private fun enterApplication() {
