@@ -109,4 +109,12 @@
     <string name="category_personal">Personal</string>
     <string name="category_health">Health</string>
     <string name="category_other">Other</string>
+    <string name="home_monthly_bills">Monthly bills</string>
+    <string name="home_monthly_bills_description">Electricity, water, gas, internet, phone, monthly services and subscriptions</string>
+    <string name="home_rent">Rent</string>
+    <string name="home_rent_description">Housing rent, amount due, paid installments and payment history</string>
+    <string name="home_expenses">Expenses</string>
+    <string name="home_expenses_description">Groceries, cleaning, maintenance, transport, health, personal purchases and more</string>
+    <string name="new_rent">Add rent</string>
+    <string name="select_expense_category">Choose expense category</string>
 </resources>
