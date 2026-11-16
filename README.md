@@ -13,6 +13,7 @@ Read the relevant contract before changing code.
 | [Data Dictionary](docs/DATA_DICTIONARY.md) | SQLite tables/columns, relationships, login/settings keys, formulas and financial validation rules |
 | [Login and Security](docs/LOGIN_AND_SECURITY.md) | Welcome flow, swipe/continue behaviour, initial credentials, credential changes and login toggle |
 | [Requirements Traceability](docs/REQUIREMENTS_TRACEABILITY.md) | Each requested requirement mapped to source code, tests, documentation and remaining acceptance checks |
+| [Changelog](CHANGELOG.md) | Version-by-version record of Native changes |
 | [Development](docs/DEVELOPMENT.md) | Toolchain, local build commands, CI, contribution workflow and production release gate |
 | [Implementation Status](docs/IMPLEMENTATION_STATUS.md) | Implemented work, proven checks, known limitations and release blockers |
 
