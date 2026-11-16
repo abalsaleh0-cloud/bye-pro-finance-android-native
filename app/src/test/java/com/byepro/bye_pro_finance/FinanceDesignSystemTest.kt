@@ -16,6 +16,10 @@ class FinanceDesignSystemTest {
         assertEquals(12, FinanceDesignTokens.SECTION_SPACING)
         assertEquals(16, FinanceDesignTokens.CARD_PADDING)
         assertEquals(12, FinanceDesignTokens.INPUT_VERTICAL_PADDING)
+        assertEquals(14, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING)
+        assertEquals(18, FinanceDesignTokens.BUTTON_HORIZONTAL_PADDING)
+        assertEquals(12, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING)
+        assertEquals(8, FinanceDesignTokens.COMPONENT_VERTICAL_PADDING)
 
         assertEquals(16, FinanceDesignTokens.CARD_RADIUS)
         assertEquals(12, FinanceDesignTokens.CONTROL_RADIUS)
@@ -25,6 +29,13 @@ class FinanceDesignSystemTest {
         assertEquals(48, FinanceDesignTokens.BUTTON_HEIGHT)
         assertEquals(44, FinanceDesignTokens.TOUCH_TARGET_SIZE)
         assertEquals(68, FinanceDesignTokens.NAVIGATION_BAR_HEIGHT)
+        assertEquals(4, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING)
+        assertEquals(4, FinanceDesignTokens.NAVIGATION_VERTICAL_PADDING)
+        assertEquals(2, FinanceDesignTokens.NAVIGATION_ITEM_PADDING)
+        assertEquals(38, FinanceDesignTokens.NAVIGATION_ICON_SLOT_WIDTH)
+        assertEquals(30, FinanceDesignTokens.NAVIGATION_ICON_SLOT_HEIGHT)
+        assertEquals(20, FinanceDesignTokens.NAVIGATION_LABEL_HEIGHT)
+        assertEquals(60, FinanceDesignTokens.NAVIGATION_CONTENT_HEIGHT)
         assertEquals(48, FinanceDesignTokens.SECTION_TAB_HEIGHT)
         assertEquals(36, FinanceDesignTokens.SECTION_HEADER_HEIGHT)
 
@@ -33,6 +44,9 @@ class FinanceDesignSystemTest {
         assertEquals(40, FinanceDesignTokens.RECORD_ICON_BOX_SIZE)
         assertEquals(20, FinanceDesignTokens.STANDARD_ICON_SIZE)
         assertEquals(1, FinanceDesignTokens.DIVIDER_HEIGHT)
+        assertEquals(56, FinanceDesignTokens.LIST_DIVIDER_START_INSET)
+        assertEquals(24, FinanceDesignTokens.EMPTY_STATE_VERTICAL_PADDING)
+        assertEquals(80, FinanceDesignTokens.MULTILINE_INPUT_HEIGHT)
         assertEquals(160L, FinanceDesignTokens.MOTION_DURATION_MS)
     }
 
@@ -83,7 +97,10 @@ class FinanceDesignSystemTest {
         assertEquals(13f, FinanceDesignTokens.TEXT_LABEL_SP, 0f)
         assertEquals(14f, FinanceDesignTokens.TEXT_BODY_SP, 0f)
         assertEquals(15f, FinanceDesignTokens.TEXT_INPUT_SP, 0f)
+        assertEquals(15f, FinanceDesignTokens.TEXT_ACTION_SP, 0f)
+        assertEquals(15f, FinanceDesignTokens.TEXT_AMOUNT_SP, 0f)
         assertEquals(16f, FinanceDesignTokens.TEXT_VALUE_SP, 0f)
+        assertEquals(16f, FinanceDesignTokens.TEXT_SECTION_TITLE_SP, 0f)
         assertEquals(20f, FinanceDesignTokens.TEXT_PAGE_TITLE_SP, 0f)
     }
 
