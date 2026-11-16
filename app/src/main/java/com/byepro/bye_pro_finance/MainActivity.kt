@@ -1967,7 +1967,7 @@ class MainActivity : Activity() {
                                 visibleMonth.get(java.util.Calendar.MONTH),
                                 day
                             )
-                            refreshCalendar()
+                            refreshCalendarAction?.invoke()
                         }
                     }
                     row.addView(cell, LinearLayout.LayoutParams(0, dp(42), 1f))
@@ -2372,7 +2372,7 @@ class MainActivity : Activity() {
                     financialModes.addView(choiceChip(title, financialMode == index) {
                         financialMode = index
                         clearResult()
-                        rebuildPanel()
+                        rebuildPanelAction?.invoke()
                     }, LinearLayout.LayoutParams(0, dp(38), 1f).apply {
                         if (index > 0) marginStart = dp(FinanceDesignTokens.SPACE_4)
                     })
