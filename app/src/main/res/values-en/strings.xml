@@ -168,4 +168,23 @@
     <string name="login_security_note">On-device protection • Your password is not synced</string>
     <string name="home_received_from_work_total">Total received from Work</string>
     <string name="home_received_from_work_total_caption">Sum of transfers recorded from the Work section this month</string>
+    <string name="calculator_expression">Calculation</string>
+    <string name="calculator_amount">Amount</string>
+    <string name="calculator_percent">Percentage</string>
+    <string name="calculator_people">Number of people</string>
+    <string name="calculator_result_placeholder">Result will appear here</string>
+    <string name="calculator_percentage">Percentage</string>
+    <string name="calculator_discount">Discount</string>
+    <string name="calculator_split">Split amount</string>
+    <string name="calculator_per_person">Per person</string>
+    <string name="calculator_remainder">Remainder</string>
+    <string name="calculator_scientific">Scientific</string>
+    <string name="calculator_financial">Financial</string>
+    <string name="calculator_calculate">Calculate</string>
+    <string name="calculator_history">Calculation history</string>
+    <string name="calculator_copy">Copy result</string>
+    <string name="calculator_copied">Result copied</string>
+    <string name="calculator_invalid_expression">Invalid or uncomputable expression</string>
+    <string name="calculator_invalid_financial">Check the amount, percentage or number of people</string>
+    <string name="use_result">Use result</string>
 </resources>
