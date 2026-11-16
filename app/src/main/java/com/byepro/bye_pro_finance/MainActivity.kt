@@ -744,29 +744,20 @@ class MainActivity : Activity() {
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.home_records))
         addMonthQuickPicker()
 
-        val tabs = listOf(
+        val tabs = HomeCategory.ordered.map { category ->
+            val titleResource = when (category) {
+                HomeCategory.MONTHLY_BILLS -> R.string.home_monthly_bills
+                HomeCategory.RENT -> R.string.home_rent
+                HomeCategory.EXPENSES -> R.string.home_expenses
+            }
             FinanceCategoryTab(
-                title = s(R.string.home_monthly_bills),
-                selected = selectedHomeCategory == HomeCategory.MONTHLY_BILLS
+                title = s(titleResource),
+                selected = selectedHomeCategory == category
             ) {
-                selectedHomeCategory = HomeCategory.MONTHLY_BILLS
-                renderCurrentSection()
-            },
-            FinanceCategoryTab(
-                title = s(R.string.home_rent),
-                selected = selectedHomeCategory == HomeCategory.RENT
-            ) {
-                selectedHomeCategory = HomeCategory.RENT
-                renderCurrentSection()
-            },
-            FinanceCategoryTab(
-                title = s(R.string.home_expenses),
-                selected = selectedHomeCategory == HomeCategory.EXPENSES
-            ) {
-                selectedHomeCategory = HomeCategory.EXPENSES
+                selectedHomeCategory = category
                 renderCurrentSection()
             }
-        )
+        }
         pageContent.addView(
             FinanceComponents.categoryTabs(this, darkTheme, tabs),
             LinearLayout.LayoutParams(
