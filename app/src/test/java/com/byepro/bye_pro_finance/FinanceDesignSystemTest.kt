@@ -87,9 +87,13 @@ class FinanceDesignSystemTest {
     fun semanticTypographyAndSpacingRemainCentralized() {
         assertEquals(2, FinanceDesignTokens.SPACE_2)
         assertEquals(4, FinanceDesignTokens.SPACE_4)
+        assertEquals(5, FinanceDesignTokens.SPACE_5)
+        assertEquals(6, FinanceDesignTokens.SPACE_6)
         assertEquals(8, FinanceDesignTokens.SPACE_8)
         assertEquals(12, FinanceDesignTokens.SPACE_12)
+        assertEquals(14, FinanceDesignTokens.SPACE_14)
         assertEquals(16, FinanceDesignTokens.SPACE_16)
+        assertEquals(18, FinanceDesignTokens.SPACE_18)
         assertEquals(24, FinanceDesignTokens.SPACE_24)
 
         assertEquals(11f, FinanceDesignTokens.TEXT_NAVIGATION_SP, 0f)
@@ -109,7 +113,9 @@ class FinanceDesignSystemTest {
         assertEquals(24, FinanceDesignTokens.CHART_LABEL_ROW_HEIGHT)
         assertEquals(7, FinanceDesignTokens.CHART_BAR_HEIGHT)
         assertEquals(5f, FinanceDesignTokens.CHART_BAR_RADIUS_DP, 0f)
+        assertEquals(5, FinanceDesignTokens.CHART_BAR_TOP_GAP)
         assertEquals(72, FinanceDesignTokens.CHART_HORIZONTAL_INSET)
+        assertEquals(3, FinanceDesignTokens.CHART_MIN_VISIBLE_FILL)
         assertEquals(FinanceDesignTokens.TOUCH_TARGET_SIZE, 44)
         assertEquals(FinanceDesignTokens.NAVIGATION_BAR_HEIGHT, 68)
     }
