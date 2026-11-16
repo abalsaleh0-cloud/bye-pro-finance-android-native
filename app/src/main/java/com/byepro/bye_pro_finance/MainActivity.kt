@@ -337,8 +337,8 @@ class MainActivity : Activity() {
                 caption = s(R.string.month_shown),
                 selectedMonth = selectedMonth.toString(),
                 contentDescription = s(R.string.month_shown) + ": " + selectedMonth
-            ) {
-                showMonthPicker(pageContent, summary.availableMonths)
+            ) { anchor ->
+                showMonthPicker(anchor, summary.availableMonths)
             },
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
