@@ -167,12 +167,16 @@ class DashboardRepository(private val helper: LegacyFinanceDatabase) {
             }
     }
 
-    fun loadBills(month: YearMonth): List<FinanceRecord> {
+    fun loadBills(month: YearMonth, kindFilter: String? = null): List<FinanceRecord> {
         val paymentsByBill = readBillPayments()
             .groupBy { it.billId }
             .mapValues { (_, items) -> items.sumOf { it.amount } }
         return readBills()
-            .filter { it.dueYear == month.year && it.dueMonth == month.monthValue }
+            .filter {
+                it.dueYear == month.year &&
+                    it.dueMonth == month.monthValue &&
+                    (kindFilter == null || it.kind == kindFilter)
+            }
             .sortedBy { it.title.lowercase(Locale.ROOT) }
             .map { bill ->
                 val paid = paymentsByBill[bill.id] ?: 0L
