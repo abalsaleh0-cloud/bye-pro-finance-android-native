@@ -17,6 +17,7 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.text.method.DigitsKeyListener
 import android.widget.PopupMenu
 import android.widget.ScrollView
 import android.widget.TextView
@@ -34,7 +35,6 @@ import com.byepro.bye_pro_finance.domain.WorkCategory
 import com.byepro.bye_pro_finance.domain.HomeRecordSource
 import com.byepro.bye_pro_finance.ui.FinanceAppearance
 import com.byepro.bye_pro_finance.ui.FinanceAppearanceMode
-import com.byepro.bye_pro_finance.ui.FinanceCategoryIndexItem
 import com.byepro.bye_pro_finance.ui.FinanceComponents
 import com.byepro.bye_pro_finance.ui.FinanceDesignSystem
 import com.byepro.bye_pro_finance.ui.FinanceDesignTokens
@@ -594,10 +594,10 @@ class MainActivity : Activity() {
                 isDark = darkTheme,
                 caption = s(R.string.month_shown),
                 selectedMonth = selectedMonth.toString(),
-                contentDescription = s(R.string.month_shown) + ": " + selectedMonth
-            ) { anchor ->
-                showMonthPicker(anchor, summary.availableMonths)
-            },
+                contentDescription = s(R.string.month_shown) + ": " + monthLabel(selectedMonth),
+                onClick = { anchor -> showMonthPicker(anchor, summary.availableMonths) },
+                onCalendarClick = { showMonthCalendarPicker() }
+            ),
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -735,10 +735,9 @@ class MainActivity : Activity() {
     }
 
     private fun renderWork() {
-        addSectionHeading(s(com.byepro.bye_pro_finance.R.string.work_records))
+        addSectionHeading(s(R.string.work_records))
         addMonthQuickPicker()
-
-        val items = WorkCategory.ordered.mapIndexed { index, category ->
+        val tabs = WorkCategory.ordered.map { category ->
             val titleResource = when (category) {
                 WorkCategory.SALARY -> R.string.work_salary
                 WorkCategory.PAYMENT -> R.string.work_payment
@@ -746,38 +745,23 @@ class MainActivity : Activity() {
                 WorkCategory.REMAINING -> R.string.work_remaining
                 WorkCategory.HOME_TRANSFERS -> R.string.work_home_transfers
             }
-            val descriptionResource = when (category) {
-                WorkCategory.SALARY -> R.string.work_salary_tag
-                WorkCategory.PAYMENT -> R.string.work_payment_tag
-                WorkCategory.ADVANCE -> R.string.work_advance_tag
-                WorkCategory.REMAINING -> R.string.work_remaining_tag
-                WorkCategory.HOME_TRANSFERS -> R.string.work_home_transfers_tag
-            }
-            FinanceCategoryIndexItem(
-                index = (index + 1).toString().padStart(2, '0'),
+            FinanceCategoryTabItem(
                 title = s(titleResource),
-                subtitle = s(descriptionResource),
+                iconResource = workCategoryIcon(category),
                 selected = selectedWorkCategory == category
             ) {
                 selectedWorkCategory = category
                 renderCurrentSection()
             }
         }
-        pageContent.addView(
-            FinanceComponents.categoryIndex(this, darkTheme, items),
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
+        pageContent.addView(FinanceComponents.categoryTabs(this, darkTheme, tabs),
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         addGap(FinanceDesignTokens.SPACE_8)
 
         val workRecords = repository.loadWorkRecords(selectedMonth)
         val records = when (selectedWorkCategory) {
             WorkCategory.SALARY -> workRecords.filter { it.kind == "salary" }
-            WorkCategory.PAYMENT -> workRecords.filter {
-                it.kind == "payment" || it.kind == "salaryPayment"
-            }
+            WorkCategory.PAYMENT -> workRecords.filter { it.kind == "payment" || it.kind == "salaryPayment" }
             WorkCategory.ADVANCE -> workRecords.filter { it.kind == "advance" }
             WorkCategory.REMAINING -> emptyList()
             WorkCategory.HOME_TRANSFERS -> repository.loadTransfers(selectedMonth)
@@ -785,33 +769,15 @@ class MainActivity : Activity() {
 
         if (selectedWorkCategory == WorkCategory.REMAINING) {
             val summary = repository.loadDashboard(selectedMonth)
-            pageContent.addView(
-                FinanceComponents.balanceStatement(
-                    this,
-                    darkTheme,
-                    s(R.string.work_remaining),
-                    formatAmount(summary.workRemaining),
-                    s(R.string.work_remaining_formula)
-                ),
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
-            pageContent.addView(
-                FinanceComponents.metricRow(
-                    this,
-                    darkTheme,
-                    R.drawable.ic_payments,
-                    s(R.string.current_salary_outstanding),
-                    formatAmount(summary.currentSalaryOutstanding),
-                    emphasized = false
-                ),
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
+            pageContent.addView(FinanceComponents.balanceStatement(
+                this, darkTheme, s(R.string.work_remaining),
+                formatAmount(summary.workRemaining), s(R.string.work_remaining_formula)
+            ), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            pageContent.addView(FinanceComponents.metricRow(
+                this, darkTheme, R.drawable.ic_work_salary,
+                s(R.string.current_salary_outstanding),
+                formatAmount(summary.currentSalaryOutstanding), emphasized = false
+            ), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             return
         }
         if (records.isEmpty()) {
@@ -821,84 +787,41 @@ class MainActivity : Activity() {
         addRecordGroup(records)
     }
 
-
-
     private fun renderHome() {
-        addSectionHeading(s(com.byepro.bye_pro_finance.R.string.home_records))
+        addSectionHeading(s(R.string.home_records))
         addMonthQuickPicker()
-
-        val items = HomeCategory.ordered.mapIndexed { index, category ->
+        val tabs = HomeCategory.ordered.map { category ->
             val titleResource = when (category) {
                 HomeCategory.MONTHLY_BILLS -> R.string.home_monthly_bills
                 HomeCategory.RENT -> R.string.home_rent
                 HomeCategory.EXPENSES -> R.string.home_expenses
                 HomeCategory.RECEIVED_FROM_WORK -> R.string.home_received_from_work
             }
-            val descriptionResource = when (category) {
-                HomeCategory.MONTHLY_BILLS -> R.string.home_monthly_bills_tag
-                HomeCategory.RENT -> R.string.home_rent_tag
-                HomeCategory.EXPENSES -> R.string.home_expenses_tag
-                HomeCategory.RECEIVED_FROM_WORK -> R.string.home_received_from_work_tag
-            }
-            FinanceCategoryIndexItem(
-                index = (index + 1).toString().padStart(2, '0'),
+            FinanceCategoryTabItem(
                 title = s(titleResource),
-                subtitle = s(descriptionResource),
+                iconResource = homeCategoryIcon(category),
                 selected = selectedHomeCategory == category
             ) {
                 selectedHomeCategory = category
                 renderCurrentSection()
             }
         }
-        pageContent.addView(
-            FinanceComponents.categoryIndex(this, darkTheme, items),
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        val description = when (selectedHomeCategory) {
-            HomeCategory.MONTHLY_BILLS -> s(R.string.home_monthly_bills_description)
-            HomeCategory.RENT -> s(R.string.home_rent_description)
-            HomeCategory.EXPENSES -> s(R.string.home_expenses_description)
-            HomeCategory.RECEIVED_FROM_WORK -> s(R.string.home_received_from_work_description)
-        }
-        pageContent.addView(
-            FinanceComponents.categoryDescription(this, darkTheme, description),
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
+        pageContent.addView(FinanceComponents.categoryTabs(this, darkTheme, tabs),
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         addGap(FinanceDesignTokens.SECTION_SPACING)
 
         val records = when (selectedHomeCategory.source) {
-            HomeRecordSource.BILLS -> repository.loadBills(
-                selectedMonth,
-                requireNotNull(selectedHomeCategory.billKind)
-            )
+            HomeRecordSource.BILLS -> repository.loadBills(selectedMonth, requireNotNull(selectedHomeCategory.billKind))
             HomeRecordSource.HOME_EXPENSES -> repository.loadHomeExpenses(selectedMonth)
             HomeRecordSource.WORK_TRANSFERS -> repository.loadTransfers(selectedMonth)
-        }.sortedByDescending {
-            if (it.kind == "bill") Long.MAX_VALUE else it.timestamp
-        }
+        }.sortedByDescending { if (it.kind == "bill") Long.MAX_VALUE else it.timestamp }
 
         if (selectedHomeCategory == HomeCategory.RECEIVED_FROM_WORK) {
-            val incomingTotal = repository.loadDashboard(selectedMonth).transfersTotal
-            pageContent.addView(
-                FinanceComponents.balanceStatement(
-                    this,
-                    darkTheme,
-                    s(R.string.home_received_from_work_total),
-                    formatAmount(incomingTotal),
-                    s(R.string.home_received_from_work_total_caption)
-                ),
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                )
-            )
+            val total = repository.loadDashboard(selectedMonth).transfersTotal
+            pageContent.addView(FinanceComponents.balanceStatement(
+                this, darkTheme, s(R.string.home_received_from_work_total),
+                formatAmount(total), s(R.string.home_received_from_work_total_caption)
+            ), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
             addGap(FinanceDesignTokens.SPACE_8)
         }
         if (records.isEmpty()) {
@@ -908,10 +831,9 @@ class MainActivity : Activity() {
         addRecordGroup(records)
     }
 
-
-
     private fun renderDebts() {
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.debt_records))
+        addMonthQuickPicker()
         val records = repository.loadDebts()
         if (records.isEmpty()) {
             addEmptyState(s(com.byepro.bye_pro_finance.R.string.no_records))
@@ -922,6 +844,7 @@ class MainActivity : Activity() {
 
     private fun renderAssistant() {
         addSectionHeading(s(R.string.ai))
+        addMonthQuickPicker()
         val panel = FinanceComponents.card(this, darkTheme)
         val icon = FinanceDesignSystem.iconBox(
             this,
@@ -959,7 +882,7 @@ class MainActivity : Activity() {
                 FinanceComponents.recordRow(
                     context = this,
                     isDark = darkTheme,
-                    iconResource = recordIcon(record.kind),
+                    iconResource = recordIcon(record),
                     title = recordTitle(record),
                     subtitle = recordDetail(record),
                     amount = formatAmount(record.amountMinorUnits),
@@ -988,51 +911,46 @@ class MainActivity : Activity() {
     }
 
     private fun showCreateMenu(anchor: View) {
-        val menu = PopupMenu(popupContext(), anchor)
+        val actions = mutableListOf<FinanceIconOptionItem>()
         when (activeSection) {
             Section.WORK -> {
-                addMenuAction(menu, s(R.string.new_salary)) {
-                    selectedWorkCategory = WorkCategory.SALARY
-                    showWorkEntryForm("salary")
+                actions += FinanceIconOptionItem(s(R.string.new_salary), R.drawable.ic_work_salary) {
+                    selectedWorkCategory = WorkCategory.SALARY; showWorkEntryForm("salary")
                 }
-                addMenuAction(menu, s(R.string.new_work_payment)) {
-                    selectedWorkCategory = WorkCategory.PAYMENT
-                    showWorkEntryForm("payment")
+                actions += FinanceIconOptionItem(s(R.string.new_work_payment), R.drawable.ic_work_payment) {
+                    selectedWorkCategory = WorkCategory.PAYMENT; showWorkEntryForm("payment")
                 }
-                addMenuAction(menu, s(R.string.new_advance)) {
-                    selectedWorkCategory = WorkCategory.ADVANCE
-                    showWorkEntryForm("advance")
+                actions += FinanceIconOptionItem(s(R.string.new_advance), R.drawable.ic_work_advance) {
+                    selectedWorkCategory = WorkCategory.ADVANCE; showWorkEntryForm("advance")
                 }
-                addMenuAction(menu, s(R.string.new_transfer)) {
-                    selectedWorkCategory = WorkCategory.HOME_TRANSFERS
-                    showTransferForm()
+                actions += FinanceIconOptionItem(s(R.string.new_transfer), R.drawable.ic_work_transfers) {
+                    selectedWorkCategory = WorkCategory.HOME_TRANSFERS; showTransferForm()
                 }
             }
             Section.HOME -> {
-                addMenuAction(menu, s(R.string.new_bill)) {
-                    selectedHomeCategory = HomeCategory.MONTHLY_BILLS
-                    showBillForm(billKind = "monthly")
+                actions += FinanceIconOptionItem(s(R.string.new_bill), R.drawable.ic_home_bills) {
+                    selectedHomeCategory = HomeCategory.MONTHLY_BILLS; showBillForm(billKind = "monthly")
                 }
-                addMenuAction(menu, s(R.string.new_rent)) {
-                    selectedHomeCategory = HomeCategory.RENT
-                    showBillForm(billKind = "rent")
+                actions += FinanceIconOptionItem(s(R.string.new_rent), R.drawable.ic_home_rent) {
+                    selectedHomeCategory = HomeCategory.RENT; showBillForm(billKind = "rent")
                 }
-                addMenuAction(menu, s(R.string.new_expense)) {
-                    selectedHomeCategory = HomeCategory.EXPENSES
-                    showHomeExpenseForm()
+                actions += FinanceIconOptionItem(s(R.string.new_expense), R.drawable.ic_home_expenses) {
+                    selectedHomeCategory = HomeCategory.EXPENSES; showHomeExpenseForm()
                 }
             }
             Section.DEBTS -> {
-                addMenuAction(menu, s(com.byepro.bye_pro_finance.R.string.new_creditor)) {
-                    showDebtForm("creditor")
-                }
-                addMenuAction(menu, s(com.byepro.bye_pro_finance.R.string.new_debtor)) {
-                    showDebtForm("debtor")
-                }
+                actions += FinanceIconOptionItem(s(R.string.new_creditor), R.drawable.ic_debts) { showDebtForm("creditor") }
+                actions += FinanceIconOptionItem(s(R.string.new_debtor), R.drawable.ic_debts) { showDebtForm("debtor") }
             }
             else -> Unit
         }
-        menu.show()
+        if (actions.isEmpty()) return
+        lateinit var dialog: AlertDialog
+        val choices = actions.map { item -> item.copy(onClick = { dialog.dismiss(); item.onClick() }) }
+        dialog = dialogBuilder().setTitle(s(R.string.add_record))
+            .setView(FinanceComponents.iconChoiceList(this, darkTheme, choices))
+            .setNegativeButton(s(R.string.cancel), null).create()
+        dialog.show()
     }
 
     private fun addMenuAction(menu: PopupMenu, title: String, action: () -> Unit) {
@@ -1054,24 +972,35 @@ class MainActivity : Activity() {
     }
 
     private fun formInput(
-        form: LinearLayout,
-        hint: String,
-        initial: String = "",
-        numeric: Boolean = false
+        form: LinearLayout, hint: String, initial: String = "", numeric: Boolean = false
     ): EditText {
         val multiline = hint == s(R.string.note_optional)
-        val field = FinanceDesignSystem.input(
-            context = this,
-            isDark = darkTheme,
-            hint = hint,
-            initialValue = initial,
-            numeric = numeric,
-            multiline = multiline
-        )
-        form.addView(field, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            if (multiline) dp(FinanceDesignTokens.MULTILINE_INPUT_HEIGHT) else dp(FinanceDesignTokens.BUTTON_HEIGHT)
-        ).apply {
+        form.addView(FinanceDesignSystem.text(
+            this, hint, FinanceDesignTokens.TEXT_CAPTION_SP, FinancePalette.text(darkTheme), bold = true
+        ).apply { setPadding(dp(FinanceDesignTokens.SPACE_2), 0, dp(FinanceDesignTokens.SPACE_2), dp(FinanceDesignTokens.SPACE_4)) })
+        val field = FinanceDesignSystem.input(this, darkTheme, hint, initial, numeric, multiline)
+        if (numeric) {
+            field.keyListener = DigitsKeyListener.getInstance("0123456789")
+            field.inputType = InputType.TYPE_CLASS_NUMBER
+            field.textDirection = View.TEXT_DIRECTION_LTR
+            field.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+            field.setTextLocale(Locale.US)
+        }
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutDirection = View.LAYOUT_DIRECTION_LTR
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        row.addView(field, LinearLayout.LayoutParams(0,
+            if (multiline) dp(FinanceDesignTokens.MULTILINE_INPUT_HEIGHT) else dp(FinanceDesignTokens.BUTTON_HEIGHT), 1f))
+        if (numeric) {
+            row.addView(FinanceDesignSystem.iconAction(this, darkTheme, R.drawable.ic_calculator, s(R.string.calculator)) {
+                showCalculator { result -> field.setText(result) }
+            }, LinearLayout.LayoutParams(dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), dp(FinanceDesignTokens.BUTTON_HEIGHT)).apply {
+                marginStart = dp(FinanceDesignTokens.SPACE_4)
+            })
+        }
+        form.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
             bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING / 2)
         })
         return field
@@ -1091,6 +1020,9 @@ class MainActivity : Activity() {
         val view = FinanceDesignSystem.text(
             this, "", FinanceDesignTokens.TEXT_BODY_SP, FinancePalette.accent(darkTheme), bold = true
         ).apply {
+            setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_calendar, 0, 0, 0)
+            compoundDrawableTintList = android.content.res.ColorStateList.valueOf(FinancePalette.accent(darkTheme))
+            compoundDrawablePadding = dp(FinanceDesignTokens.SPACE_8)
             setPadding(dp(FinanceDesignTokens.INPUT_HORIZONTAL_PADDING), 0, dp(FinanceDesignTokens.INPUT_HORIZONTAL_PADDING), 0)
             background = FinanceDesignSystem.rounded(
                 this@MainActivity,
@@ -1250,21 +1182,29 @@ class MainActivity : Activity() {
         var selectedCategoryId = existing?.categoryId
             ?.takeIf { it in categories } ?: "other"
         val category = FinanceComponents.selectField(
-            context = this,
-            isDark = darkTheme,
-            label = categoryTitle(selectedCategoryId)
+            context = this, isDark = darkTheme,
+            label = categoryTitle(selectedCategoryId),
+            iconResource = expenseCategoryIcon(selectedCategoryId)
         ) { field ->
-            val labels = categories.map(::categoryTitle).toTypedArray()
-            val selectedIndex = categories.indexOf(selectedCategoryId).coerceAtLeast(0)
-            dialogBuilder()
-                .setTitle(s(R.string.select_expense_category))
-                .setSingleChoiceItems(labels, selectedIndex) { dialog, which ->
-                    selectedCategoryId = categories[which]
-                    field.text = categoryTitle(selectedCategoryId) + "  ▾"
-                    dialog.dismiss()
+            lateinit var categoryDialog: AlertDialog
+            val options = categories.map { id ->
+                FinanceIconOptionItem(
+                    title = categoryTitle(id),
+                    iconResource = expenseCategoryIcon(id),
+                    selected = id == selectedCategoryId
+                ) {
+                    selectedCategoryId = id
+                    field.text = categoryTitle(id)
+                    field.setCompoundDrawablesRelativeWithIntrinsicBounds(expenseCategoryIcon(id), 0, 0, 0)
+                    categoryDialog.dismiss()
                 }
+            }
+            categoryDialog = dialogBuilder()
+                .setTitle(s(R.string.select_expense_category))
+                .setView(FinanceComponents.iconChoiceList(this, darkTheme, options))
                 .setNegativeButton(s(R.string.cancel), null)
-                .show()
+                .create()
+            categoryDialog.show()
         }
         form.addView(category, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -1396,6 +1336,12 @@ class MainActivity : Activity() {
         val dueMonth = existing?.dueMonth ?: selectedMonth.monthValue
         val kind = billKind ?: if (existing?.detail?.startsWith("rent") == true) "rent" else "monthly"
         val formTitle = if (kind == "rent") R.string.new_rent else R.string.new_bill
+        form.addView(FinanceComponents.formIconHeader(
+            this, darkTheme,
+            if (kind == "rent") R.drawable.ic_home_rent else R.drawable.ic_home_bills,
+            s(formTitle),
+            if (kind == "rent") s(R.string.home_rent_description) else s(R.string.home_monthly_bills_description)
+        ))
 
         dialogBuilder()
             .setTitle(s(formTitle))
@@ -1692,16 +1638,42 @@ class MainActivity : Activity() {
     }
 
     private fun showMonthPicker(anchor: View, months: List<YearMonth>? = null) {
-        val available = months ?: repository.loadDashboard(selectedMonth).availableMonths
-        val popup = PopupMenu(popupContext(), anchor)
-        available.forEach { month ->
-            popup.menu.add(month.toString()).setOnMenuItemClickListener {
-                selectedMonth = month
+        val available = (months ?: repository.loadDashboard(selectedMonth).availableMonths).distinct().sortedDescending()
+        if (available.isEmpty()) return
+        val items = available.map { monthLabel(it) }.toTypedArray()
+        dialogBuilder().setTitle(s(R.string.month_shown))
+            .setItems(items) { _, index ->
+                selectedMonth = available[index]
                 renderCurrentSection()
-                true
             }
+            .setNegativeButton(s(R.string.cancel), null)
+            .show()
+    }
+
+    private fun monthLabel(month: YearMonth): String =
+        String.format(Locale.US, "%04d-%02d", month.year, month.monthValue)
+
+    private fun showMonthCalendarPicker() {
+        val picker = DatePickerDialog(
+            ContextThemeWrapper(this, if (darkTheme) R.style.NativeFinanceDialogDarkTheme else R.style.NativeFinanceDialogLightTheme),
+            { _, year, month, _ ->
+                selectedMonth = YearMonth.of(year, month + 1)
+                renderCurrentSection()
+            },
+            selectedMonth.year, selectedMonth.monthValue - 1, 1
+        )
+        val first = java.util.Calendar.getInstance().apply {
+            set(1900, java.util.Calendar.JANUARY, 1, 0, 0, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
         }
-        popup.show()
+        val last = java.util.Calendar.getInstance().apply {
+            set(2100, java.util.Calendar.DECEMBER, 31, 23, 59, 59)
+            set(java.util.Calendar.MILLISECOND, 999)
+        }
+        picker.datePicker.minDate = first.timeInMillis
+        picker.datePicker.maxDate = last.timeInMillis
+        picker.setTitle(s(R.string.calendar))
+        picker.show()
     }
 
     private fun showCalculator() {
@@ -1924,13 +1896,40 @@ class MainActivity : Activity() {
         else -> R.drawable.ic_debts
     }
 
-    private fun recordIcon(kind: String): Int = when (kind) {
-        "salary" -> R.drawable.ic_payments
-        "advance" -> R.drawable.ic_advance
-        "payment", "salaryPayment" -> R.drawable.ic_payments
-        "transfer" -> R.drawable.ic_transfer
-        "expense" -> R.drawable.ic_expense
-        "bill", "billPayment" -> R.drawable.ic_bill
+    private fun workCategoryIcon(category: WorkCategory): Int = when (category) {
+        WorkCategory.SALARY -> R.drawable.ic_work_salary
+        WorkCategory.PAYMENT -> R.drawable.ic_work_payment
+        WorkCategory.ADVANCE -> R.drawable.ic_work_advance
+        WorkCategory.REMAINING -> R.drawable.ic_work_remaining
+        WorkCategory.HOME_TRANSFERS -> R.drawable.ic_work_transfers
+    }
+
+    private fun homeCategoryIcon(category: HomeCategory): Int = when (category) {
+        HomeCategory.MONTHLY_BILLS -> R.drawable.ic_home_bills
+        HomeCategory.RENT -> R.drawable.ic_home_rent
+        HomeCategory.EXPENSES -> R.drawable.ic_home_expenses
+        HomeCategory.RECEIVED_FROM_WORK -> R.drawable.ic_home_received
+    }
+
+    private fun expenseCategoryIcon(category: String): Int = when (category) {
+        "groceries" -> R.drawable.ic_expense_groceries
+        "utilities" -> R.drawable.ic_expense_utilities
+        "housing" -> R.drawable.ic_expense_housing
+        "cleaning" -> R.drawable.ic_expense_cleaning
+        "maintenance" -> R.drawable.ic_expense_maintenance
+        "transport" -> R.drawable.ic_expense_transport
+        "personal" -> R.drawable.ic_expense_personal
+        "health" -> R.drawable.ic_expense_health
+        else -> R.drawable.ic_expense_other
+    }
+
+    private fun recordIcon(record: FinanceRecord): Int = when (record.kind) {
+        "salary" -> R.drawable.ic_work_salary
+        "advance" -> R.drawable.ic_work_advance
+        "payment", "salaryPayment" -> R.drawable.ic_work_payment
+        "transfer" -> R.drawable.ic_work_transfers
+        "expense" -> expenseCategoryIcon(record.categoryId ?: "other")
+        "bill", "billPayment" -> if (record.detail.startsWith("rent")) R.drawable.ic_home_rent else R.drawable.ic_home_bills
         "creditor", "debtor", "debtPayment" -> R.drawable.ic_debts
         else -> R.drawable.ic_work
     }
