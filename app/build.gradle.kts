@@ -88,8 +88,8 @@ android {
         applicationId = "com.byepro.bye_pro_finance"
         minSdk = 30
         targetSdk = 36
-        versionCode = 171
-        versionName = "1.1.70"
+        versionCode = 172
+        versionName = "1.1.71"
         testInstrumentationRunner = "android.test.InstrumentationTestRunner"
     }
 
@@ -132,5 +132,6 @@ kotlin {
 
 dependencies {
     implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
     testImplementation("junit:junit:4.13.2")
 }

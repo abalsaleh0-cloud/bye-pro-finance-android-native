@@ -1,6 +1,6 @@
 package com.byepro.bye_pro_finance
 
-import android.app.Activity
+import androidx.fragment.app.FragmentActivity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
@@ -61,7 +61,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
-class MainActivity : Activity() {
+class MainActivity : FragmentActivity() {
 
     private enum class Section {
         DASHBOARD, WORK, HOME, DEBTS, AI
@@ -1803,7 +1803,7 @@ class MainActivity : Activity() {
             .setTitleText(s(R.string.calendar))
             .setSelection(initialMillis)
             .setCalendarConstraints(constraints)
-            .setTheme(if (darkTheme) R.style.NativeFinanceDialogDarkTheme else R.style.NativeFinanceDialogLightTheme)
+            .setTheme(if (darkTheme) R.style.NativeFinanceCalendarDarkTheme else R.style.NativeFinanceCalendarLightTheme)
             .build()
         picker.addOnPositiveButtonClickListener { selection ->
             val picked = java.util.Calendar.getInstance().apply {

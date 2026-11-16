@@ -11,6 +11,22 @@
         <item name="android:windowBackground">@color/finance_dark_background</item>
     </style>
 
+    <style name="NativeFinanceCalendarLightTheme" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">@color/finance_light_accent</item>
+        <item name="colorOnPrimary">@color/finance_light_background</item>
+        <item name="colorSurface">@color/finance_light_surface</item>
+        <item name="colorOnSurface">@color/finance_light_text</item>
+        <item name="colorOnSurfaceVariant">@color/finance_light_secondary_text</item>
+    </style>
+
+    <style name="NativeFinanceCalendarDarkTheme" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">@color/finance_dark_accent</item>
+        <item name="colorOnPrimary">@color/finance_dark_background</item>
+        <item name="colorSurface">@color/finance_dark_surface</item>
+        <item name="colorOnSurface">@color/finance_dark_text</item>
+        <item name="colorOnSurfaceVariant">@color/finance_dark_secondary_text</item>
+    </style>
+
     <style name="NativeFinanceDialogLightTheme" parent="@android:style/Theme.Material.Light.Dialog.Alert">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowBackground">@drawable/finance_dialog_background_light</item>
