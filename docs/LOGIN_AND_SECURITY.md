@@ -16,7 +16,7 @@ Every fresh application process starts with this order (returning from the Andro
 
 When the user has disabled login protection, the welcome screen still appears, but Continue opens the application directly and skips the login screen.
 
-The welcome and login screens use the same Design System tokens, palette, RTL layout, typography, inputs, cards and buttons defined in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md). Arabic and English change the displayed text only; the geometry remains RTL and unchanged.
+Welcome and Login use the shared semantic palette and typography without generic centered cards. Welcome uses the BYE PRO signature, original finance-orbit artwork, strong statement typography and a progress rule. Login uses its own private-access hierarchy and open underlined fields. Arabic and English change text only; geometry remains RTL and unchanged.
 
 ## 2. Initial credentials
 
