@@ -790,8 +790,22 @@ class MainActivity : Activity() {
                     this,
                     darkTheme,
                     s(R.string.work_remaining),
-                    formatAmount(summary.currentSalaryOutstanding),
+                    formatAmount(summary.workRemaining),
                     s(R.string.work_remaining_formula)
+                ),
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+            pageContent.addView(
+                FinanceComponents.metricRow(
+                    this,
+                    darkTheme,
+                    R.drawable.ic_payments,
+                    s(R.string.current_salary_outstanding),
+                    formatAmount(summary.currentSalaryOutstanding),
+                    emphasized = false
                 ),
                 LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -870,6 +884,23 @@ class MainActivity : Activity() {
             if (it.kind == "bill") Long.MAX_VALUE else it.timestamp
         }
 
+        if (selectedHomeCategory == HomeCategory.RECEIVED_FROM_WORK) {
+            val incomingTotal = repository.loadDashboard(selectedMonth).transfersTotal
+            pageContent.addView(
+                FinanceComponents.balanceStatement(
+                    this,
+                    darkTheme,
+                    s(R.string.home_received_from_work_total),
+                    formatAmount(incomingTotal),
+                    s(R.string.home_received_from_work_total_caption)
+                ),
+                LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+            addGap(FinanceDesignTokens.SPACE_8)
+        }
         if (records.isEmpty()) {
             addEmptyState(s(R.string.no_records))
             return
