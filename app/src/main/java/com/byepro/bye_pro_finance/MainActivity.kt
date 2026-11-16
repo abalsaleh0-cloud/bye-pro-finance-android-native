@@ -1780,227 +1780,38 @@ class MainActivity : Activity() {
      * selected-date header, month navigation, localized weekday row,
      * round day cells, year picker, and Cancel/Confirm actions.
      */
+    /** Native Material calendar picker matching Flutter's showDatePicker interaction. */
     private fun showFlutterStyleDatePicker(
         initialDate: java.util.Calendar,
         onDateSelected: (java.util.Calendar) -> Unit
     ) {
-        val locale = if (localeCode == "ar") Locale("ar") else Locale.US
-        val palette = FinanceDesignSystem.colors(darkTheme)
-        val selected = java.util.Calendar.getInstance().apply {
-            timeInMillis = initialDate.timeInMillis
-            set(java.util.Calendar.HOUR_OF_DAY, 12)
-            set(java.util.Calendar.MINUTE, 0)
-            set(java.util.Calendar.SECOND, 0)
-            set(java.util.Calendar.MILLISECOND, 0)
-        }
-        val visibleMonth = java.util.Calendar.getInstance().apply {
-            timeInMillis = selected.timeInMillis
-            set(java.util.Calendar.DAY_OF_MONTH, 1)
-        }
-        val dialog = Dialog(ContextThemeWrapper(
-            this,
-            if (darkTheme) R.style.NativeFinanceDialogDarkTheme else R.style.NativeFinanceDialogLightTheme
-        ))
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            setPadding(dp(FinanceDesignTokens.SPACE_16), dp(FinanceDesignTokens.SPACE_16),
-                dp(FinanceDesignTokens.SPACE_16), dp(FinanceDesignTokens.SPACE_12))
-            background = FinanceDesignSystem.rounded(this@MainActivity, palette.surface, 24)
-        }
-        val dateHeader = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            setPadding(dp(FinanceDesignTokens.SPACE_16), dp(FinanceDesignTokens.SPACE_12),
-                dp(FinanceDesignTokens.SPACE_16), dp(FinanceDesignTokens.SPACE_12))
-            background = GradientDrawable().apply {
-                val radius = dp(FinanceDesignTokens.DIALOG_RADIUS).toFloat()
-                cornerRadii = floatArrayOf(radius, radius, radius, radius, radius, radius, radius, radius)
-                setColor(palette.accent)
+        val initialMillis = initialDate.timeInMillis
+        val minDate = java.util.Calendar.getInstance().apply {
+            clear()
+            set(1900, java.util.Calendar.JANUARY, 1)
+        }.timeInMillis
+        val maxDate = java.util.Calendar.getInstance().apply {
+            clear()
+            set(2100, java.util.Calendar.DECEMBER, 31)
+        }.timeInMillis
+        val constraints = com.google.android.material.datepicker.CalendarConstraints.Builder()
+            .setStart(minDate)
+            .setEnd(maxDate)
+            .setOpenAt(initialMillis)
+            .build()
+        val picker = com.google.android.material.datepicker.MaterialDatePicker.Builder.datePicker()
+            .setTitleText(s(R.string.calendar))
+            .setSelection(initialMillis)
+            .setCalendarConstraints(constraints)
+            .setTheme(if (darkTheme) R.style.NativeFinanceDialogDarkTheme else R.style.NativeFinanceDialogLightTheme)
+            .build()
+        picker.addOnPositiveButtonClickListener { selection ->
+            val picked = java.util.Calendar.getInstance().apply {
+                timeInMillis = selection
             }
+            onDateSelected(picked)
         }
-        dateHeader.addView(FinanceDesignSystem.text(
-            this, s(R.string.calendar), FinanceDesignTokens.TEXT_CAPTION_SP,
-            palette.onAccent, bold = true
-        ))
-        val selectedDateText = FinanceDesignSystem.text(
-            this, "", FinanceDesignTokens.TEXT_BALANCE_SP, palette.onAccent, bold = true
-        ).apply { setPadding(0, dp(FinanceDesignTokens.SPACE_4), 0, 0) }
-        dateHeader.addView(selectedDateText)
-        root.addView(dateHeader, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        ))
-        val monthRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp(FinanceDesignTokens.SPACE_8), 0, dp(FinanceDesignTokens.SPACE_4))
-        }
-        fun calendarArrow(glyph: String, action: () -> Unit): TextView =
-            FinanceDesignSystem.text(this, glyph, FinanceDesignTokens.TEXT_VALUE_SP, palette.text, bold = true).apply {
-                gravity = Gravity.CENTER
-                minWidth = dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)
-                minHeight = dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(palette.raised)
-                }
-                isClickable = true
-                isFocusable = true
-                foreground = FinanceDesignSystem.ripple(this@MainActivity, darkTheme)
-                setOnClickListener { action() }
-            }
-        var refreshCalendarAction: (() -> Unit)? = null
-        val previousMonth = calendarArrow("‹") {
-            visibleMonth.add(java.util.Calendar.MONTH, -1)
-            refreshCalendarAction?.invoke()
-        }
-        val nextMonth = calendarArrow("›") {
-            visibleMonth.add(java.util.Calendar.MONTH, 1)
-            refreshCalendarAction?.invoke()
-        }
-        val monthTitle = FinanceDesignSystem.text(
-            this, "", FinanceDesignTokens.TEXT_BODY_SP, palette.text, bold = true
-        ).apply {
-            gravity = Gravity.CENTER
-            isClickable = true
-            isFocusable = true
-            foreground = FinanceDesignSystem.ripple(this@MainActivity, darkTheme)
-            setOnClickListener {
-                val yearPicker = NumberPicker(this@MainActivity).apply {
-                    minValue = 1900
-                    maxValue = 2100
-                    value = visibleMonth.get(java.util.Calendar.YEAR).coerceIn(1900, 2100)
-                    wrapSelectorWheel = false
-                }
-                dialogBuilder()
-                    .setTitle(s(R.string.calendar))
-                    .setView(yearPicker)
-                    .setPositiveButton(s(R.string.confirm)) { _, _ ->
-                        visibleMonth.set(java.util.Calendar.YEAR, yearPicker.value)
-                        refreshCalendarAction?.invoke()
-                    }
-                    .setNegativeButton(s(R.string.cancel), null)
-                    .show()
-            }
-        }
-        monthRow.addView(previousMonth, LinearLayout.LayoutParams(dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)))
-        monthRow.addView(monthTitle, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), 1f))
-        monthRow.addView(nextMonth, LinearLayout.LayoutParams(dp(FinanceDesignTokens.TOUCH_TARGET_SIZE), dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)))
-        root.addView(monthRow)
-        val weekdayRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        root.addView(weekdayRow, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.CALENDAR_WEEKDAY_HEIGHT)
-        ))
-        val calendarGrid = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-        }
-        root.addView(calendarGrid)
-        refreshCalendarAction = {
-            val monthKey = YearMonth.of(
-                visibleMonth.get(java.util.Calendar.YEAR),
-                visibleMonth.get(java.util.Calendar.MONTH) + 1
-            )
-            monthTitle.text = monthDisplayLabel(monthKey)
-            val datePattern = if (localeCode == "ar") "EEEE، d MMMM yyyy" else "EEEE, d MMMM yyyy"
-            selectedDateText.text = SimpleDateFormat(datePattern, locale).format(selected.time)
-            weekdayRow.removeAllViews()
-            calendarGrid.removeAllViews()
-            val dayNames = java.text.DateFormatSymbols(locale).shortWeekdays
-            val firstDay = java.util.Calendar.getInstance(locale).firstDayOfWeek
-            for (offset in 0 until 7) {
-                val dayOfWeek = ((firstDay - 1 + offset) % 7) + 1
-                val dayLabel = FinanceDesignSystem.text(
-                    this, dayNames[dayOfWeek].take(2), FinanceDesignTokens.TEXT_CAPTION_SP,
-                    palette.secondaryText, bold = true
-                ).apply {
-                    gravity = Gravity.CENTER
-                    textDirection = View.TEXT_DIRECTION_RTL
-                    setTextLocale(locale)
-                }
-                weekdayRow.addView(dayLabel, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.CALENDAR_WEEKDAY_HEIGHT), 1f))
-            }
-            val first = visibleMonth.clone() as java.util.Calendar
-            first.set(java.util.Calendar.DAY_OF_MONTH, 1)
-            val leading = (first.get(java.util.Calendar.DAY_OF_WEEK) - firstDay + 7) % 7
-            val daysInMonth = visibleMonth.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
-            for (week in 0 until 6) {
-                val row = LinearLayout(this).apply {
-                    orientation = LinearLayout.HORIZONTAL
-                    layoutDirection = View.LAYOUT_DIRECTION_RTL
-                }
-                for (column in 0 until 7) {
-                    val day = week * 7 + column - leading + 1
-                    val cell = FinanceDesignSystem.text(
-                        this, if (day in 1..daysInMonth) String.format(Locale.US, "%d", day) else "",
-                        FinanceDesignTokens.TEXT_BODY_SP,
-                        palette.text
-                    ).apply {
-                        gravity = Gravity.CENTER
-                        textDirection = View.TEXT_DIRECTION_LTR
-                        setTextLocale(Locale.US)
-                        isClickable = day in 1..daysInMonth
-                        isFocusable = isClickable
-                    }
-                    if (day in 1..daysInMonth) {
-                        val isSelected = selected.get(java.util.Calendar.YEAR) == visibleMonth.get(java.util.Calendar.YEAR) &&
-                            selected.get(java.util.Calendar.MONTH) == visibleMonth.get(java.util.Calendar.MONTH) &&
-                            selected.get(java.util.Calendar.DAY_OF_MONTH) == day
-                        if (isSelected) {
-                            cell.background = GradientDrawable().apply {
-                                shape = GradientDrawable.OVAL
-                                setColor(palette.accent)
-                            }
-                            cell.setTextColor(palette.onAccent)
-                            cell.typeface = Typeface.DEFAULT_BOLD
-                        } else {
-                            cell.background = null
-                        }
-                        cell.setOnClickListener {
-                            selected.set(
-                                visibleMonth.get(java.util.Calendar.YEAR),
-                                visibleMonth.get(java.util.Calendar.MONTH),
-                                day
-                            )
-                            refreshCalendarAction?.invoke()
-                        }
-                    }
-                    row.addView(cell, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.CALENDAR_DAY_CELL_HEIGHT), 1f))
-                }
-                calendarGrid.addView(row, LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.CALENDAR_DAY_CELL_HEIGHT)
-                ))
-            }
-        }
-        refreshCalendarAction?.invoke()
-        val actions = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp(FinanceDesignTokens.SPACE_8), 0, 0)
-        }
-        actions.addView(FinanceDesignSystem.button(
-            this, darkTheme, s(R.string.cancel), primary = false
-        ) { dialog.dismiss() }, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.BUTTON_HEIGHT), 1f))
-        actions.addView(FinanceDesignSystem.button(
-            this, darkTheme, s(R.string.confirm), primary = true
-        ) {
-            onDateSelected(selected.clone() as java.util.Calendar)
-            dialog.dismiss()
-        }, LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.BUTTON_HEIGHT), 1f).apply {
-            marginStart = dp(FinanceDesignTokens.SPACE_8)
-        })
-        root.addView(actions)
-        dialog.setContentView(root)
-        dialog.show()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-        val width = (resources.displayMetrics.widthPixels - dp(FinanceDesignTokens.DIALOG_HORIZONTAL_MARGIN)).coerceAtMost(dp(FinanceDesignTokens.DIALOG_MAX_WIDTH))
-        dialog.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
+        picker.show(supportFragmentManager, "bye_pro_material_calendar")
     }
 
     private fun showCalculator(onUseResult: ((String) -> Unit)? = null) {
