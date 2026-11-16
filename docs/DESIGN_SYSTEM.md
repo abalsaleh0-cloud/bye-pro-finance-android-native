@@ -64,7 +64,7 @@ All colors are semantic. Screens must request a role from `FinanceDesignSystem.c
 | Danger | `#D9535D` | Destructive and warning states |
 | Positive | `#23885C` | Positive financial state |
 
-**Rules:** no gradients, decorative neon, arbitrary transparency, per-screen accent colors, or theme catalogues. Danger and positive colors are reserved for meaning, not decoration. Text must pass the contrast assertions in `FinanceDesignSystemTest`.
+**Rules:** no gradients, decorative neon, arbitrary transparency, per-screen accent colors, or theme catalogues. Danger and positive colors are reserved for meaning, not decoration. Text must pass the contrast assertions in `FinanceDesignSystemTest`. CI also runs `scripts/check_design_system.py` to compare the Kotlin palette with Android XML color resources and validate the shared core dimensions.
 
 ## 4. Typography
 
