@@ -11,6 +11,12 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 
+data class FinanceCategoryTab(
+    val title: String,
+    val selected: Boolean,
+    val onClick: () -> Unit
+)
+
 data class FinanceNavigationItem(
     val title: String,
     val iconResource: Int,
@@ -134,6 +140,122 @@ object FinanceComponents {
             ))
         }
         return bar
+    }
+
+    /** Three-way segmented selector for a screen's fixed top-level categories. */
+    fun categoryTabs(
+        context: Context,
+        isDark: Boolean,
+        items: List<FinanceCategoryTab>
+    ): LinearLayout {
+        val palette = FinanceDesignSystem.colors(isDark)
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+            gravity = Gravity.CENTER_VERTICAL
+            background = FinanceDesignSystem.rounded(
+                context,
+                palette.raised,
+                FinanceDesignTokens.CONTROL_RADIUS
+            )
+            setPadding(
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING)
+            )
+
+            items.forEach { item ->
+                val tab = FinanceDesignSystem.text(
+                    context,
+                    item.title,
+                    FinanceDesignTokens.TEXT_LABEL_SP,
+                    if (item.selected) palette.onAccent else palette.secondaryText,
+                    bold = item.selected
+                ).apply {
+                    gravity = Gravity.CENTER
+                    maxLines = 1
+                    minHeight = FinanceDesignSystem.dp(
+                        context, FinanceDesignTokens.SECTION_TAB_HEIGHT -
+                            (FinanceDesignTokens.NAVIGATION_ITEM_PADDING * 2)
+                    )
+                    setPadding(
+                        FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_2),
+                        0,
+                        FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_2),
+                        0
+                    )
+                    background = FinanceDesignSystem.rounded(
+                        context,
+                        if (item.selected) palette.accent else android.graphics.Color.TRANSPARENT,
+                        FinanceDesignTokens.CONTROL_RADIUS
+                    )
+                    isClickable = true
+                    isFocusable = true
+                    foreground = FinanceDesignSystem.ripple(context, isDark)
+                    contentDescription = item.title
+                    setOnClickListener { item.onClick() }
+                }
+                addView(tab, LinearLayout.LayoutParams(
+                    0,
+                    FinanceDesignSystem.dp(context, FinanceDesignTokens.SECTION_TAB_HEIGHT),
+                    1f
+                ))
+            }
+        }
+    }
+
+    /** Shared selectable form field for choosing a value from a finite list. */
+    fun selectField(
+        context: Context,
+        isDark: Boolean,
+        label: String,
+        onClick: (TextView) -> Unit
+    ): TextView {
+        val palette = FinanceDesignSystem.colors(isDark)
+        return FinanceDesignSystem.text(
+            context,
+            "$label  ▾",
+            FinanceDesignTokens.TEXT_BODY_SP,
+            palette.text
+        ).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),
+                0,
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),
+                0
+            )
+            minHeight = FinanceDesignSystem.dp(context, FinanceDesignTokens.BUTTON_HEIGHT)
+            background = FinanceDesignSystem.rounded(
+                context,
+                palette.raised,
+                FinanceDesignTokens.CONTROL_RADIUS
+            )
+            isClickable = true
+            isFocusable = true
+            foreground = FinanceDesignSystem.ripple(context, isDark)
+            setOnClickListener { onClick(this) }
+        }
+    }
+
+    /** Supporting copy below the selected category tabs. */
+    fun categoryDescription(
+        context: Context,
+        isDark: Boolean,
+        description: String
+    ): TextView = FinanceDesignSystem.text(
+        context,
+        description,
+        FinanceDesignTokens.TEXT_CAPTION_SP,
+        FinanceDesignSystem.colors(isDark).secondaryText
+    ).apply {
+        setPadding(
+            FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_4),
+            FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8),
+            FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_4),
+            FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_4)
+        )
     }
 
     fun sectionHeader(
