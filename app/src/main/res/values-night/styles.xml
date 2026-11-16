@@ -4,11 +4,11 @@
         <item name="android:fontFamily">sans</item>
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">#17212B</item>
-        <item name="android:navigationBarColor">#17212B</item>
+        <item name="android:statusBarColor">@color/finance_dark_background</item>
+        <item name="android:navigationBarColor">@color/finance_dark_background</item>
         <item name="android:windowLightNavigationBar">false</item>
-        <item name="android:colorAccent">#5AA7E8</item>
-        <item name="android:windowBackground">#17212B</item>
+        <item name="android:colorAccent">@color/finance_dark_accent</item>
+        <item name="android:windowBackground">@color/finance_dark_background</item>
     </style>
 
 </resources>
