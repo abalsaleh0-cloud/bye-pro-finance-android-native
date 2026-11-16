@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Values mirrored from FinanceDesignTokens for platform-owned widgets. -->
+    <dimen name="finance_button_height">48dp</dimen>
+    <dimen name="finance_touch_target_size">44dp</dimen>
+    <dimen name="finance_dialog_radius">20dp</dimen>
+</resources>
