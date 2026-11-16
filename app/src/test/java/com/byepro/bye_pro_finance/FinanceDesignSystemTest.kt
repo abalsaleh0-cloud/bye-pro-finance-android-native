@@ -78,20 +78,20 @@ class FinanceDesignSystemTest {
         assertEquals(16, FinanceDesignTokens.SPACE_16)
         assertEquals(24, FinanceDesignTokens.SPACE_24)
 
-        assertEquals(11f, FinanceDesignTokens.TEXT_NAVIGATION_SP)
-        assertEquals(12f, FinanceDesignTokens.TEXT_CAPTION_SP)
-        assertEquals(13f, FinanceDesignTokens.TEXT_LABEL_SP)
-        assertEquals(14f, FinanceDesignTokens.TEXT_BODY_SP)
-        assertEquals(15f, FinanceDesignTokens.TEXT_INPUT_SP)
-        assertEquals(16f, FinanceDesignTokens.TEXT_VALUE_SP)
-        assertEquals(20f, FinanceDesignTokens.TEXT_PAGE_TITLE_SP)
+        assertEquals(11f, FinanceDesignTokens.TEXT_NAVIGATION_SP, 0f)
+        assertEquals(12f, FinanceDesignTokens.TEXT_CAPTION_SP, 0f)
+        assertEquals(13f, FinanceDesignTokens.TEXT_LABEL_SP, 0f)
+        assertEquals(14f, FinanceDesignTokens.TEXT_BODY_SP, 0f)
+        assertEquals(15f, FinanceDesignTokens.TEXT_INPUT_SP, 0f)
+        assertEquals(16f, FinanceDesignTokens.TEXT_VALUE_SP, 0f)
+        assertEquals(20f, FinanceDesignTokens.TEXT_PAGE_TITLE_SP, 0f)
     }
 
     @Test
     fun chartAndSharedComponentsUseApprovedGeometry() {
         assertEquals(24, FinanceDesignTokens.CHART_LABEL_ROW_HEIGHT)
         assertEquals(7, FinanceDesignTokens.CHART_BAR_HEIGHT)
-        assertEquals(5f, FinanceDesignTokens.CHART_BAR_RADIUS_DP)
+        assertEquals(5f, FinanceDesignTokens.CHART_BAR_RADIUS_DP, 0f)
         assertEquals(72, FinanceDesignTokens.CHART_HORIZONTAL_INSET)
         assertEquals(FinanceDesignTokens.TOUCH_TARGET_SIZE, 44)
         assertEquals(FinanceDesignTokens.NAVIGATION_BAR_HEIGHT, 68)
