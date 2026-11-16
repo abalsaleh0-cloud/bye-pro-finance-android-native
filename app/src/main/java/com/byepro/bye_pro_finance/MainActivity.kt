@@ -2060,7 +2060,7 @@ class MainActivity : Activity() {
         ).apply {
             textDirection = View.TEXT_DIRECTION_LTR
             textAlignment = View.TEXT_ALIGNMENT_VIEW_END
-            textIsSelectable = true
+            isTextSelectable = true
         }
         val historyPanel = FinanceComponents.card(this, darkTheme).apply {
             visibility = View.GONE
@@ -2080,6 +2080,7 @@ class MainActivity : Activity() {
         ).apply { topMargin = dp(FinanceDesignTokens.SPACE_8) })
 
         var rebuildPanelAction: (() -> Unit)? = null
+        var clearResultAction: (() -> Unit)? = null
         fun refreshHistory() {
             historyPanel.removeAllViews()
             if (history.isEmpty()) {
@@ -2130,10 +2131,10 @@ class MainActivity : Activity() {
                 val reuse = FinanceDesignSystem.iconAction(
                     this, darkTheme, R.drawable.ic_edit, s(R.string.calculator_expression)
                 ) {
-                    expression.setText(entry.first)
+                    expression.setText(entry.second)
                     expression.setSelection(expression.text.length)
                     mode = 0
-                    clearResult()
+                    clearResultAction?.invoke()
                     rebuildPanelAction?.invoke()
                 }
                 row.addView(reuse, LinearLayout.LayoutParams(dp(44), dp(44)))
@@ -2161,6 +2162,7 @@ class MainActivity : Activity() {
             resultCard.visibility = View.GONE
             refreshResultButton()
         }
+        clearResultAction = { clearResult() }
         fun showError(message: String) {
             resultForInsertion = null
             resultLabel = ""
