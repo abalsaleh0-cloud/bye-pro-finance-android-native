@@ -5,6 +5,20 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val financeRasterRes = layout.buildDirectory.dir("generated/res/financeRasterIcons")
+val generateFinanceRasterIcons = tasks.register<Exec>("generateFinanceRasterIcons") {
+    val source = layout.projectDirectory.file("src/main/assets/byepro-icons-sheet.png")
+    val generator = rootProject.file("scripts/generate_raster_icons.py")
+    inputs.file(source)
+    inputs.file(generator)
+    outputs.dir(financeRasterRes)
+    commandLine(
+        "python3", generator.absolutePath,
+        "--input", source.asFile.absolutePath,
+        "--output", financeRasterRes.get().asFile.absolutePath
+    )
+}
+
 // Keep release signing compatible with the Flutter app. The same keystore,
 // alias and credentials are used so an eventual Native release can update the
 // installed application without changing package identity or signing lineage.
@@ -51,6 +65,10 @@ val validateReleaseSigning = tasks.register("validateReleaseSigning") {
     }
 }
 
+tasks.named("preBuild").configure {
+    dependsOn(generateFinanceRasterIcons)
+}
+
 tasks.configureEach {
     if (name == "assembleRelease" || name == "bundleRelease") {
         dependsOn(validateReleaseSigning)
@@ -58,6 +76,10 @@ tasks.configureEach {
 }
 
 android {
+    // Use a concrete directory path here because AGP 9 rejects Provider values
+    // in the legacy SourceSet API. The preBuild dependency above guarantees the
+    // PNG resources exist before resource merging starts.
+    sourceSets.getByName("main").res.srcDir(financeRasterRes.get().asFile)
     namespace = "com.byepro.bye_pro_finance"
     compileSdk = 36
 
@@ -66,8 +88,8 @@ android {
         applicationId = "com.byepro.bye_pro_finance"
         minSdk = 30
         targetSdk = 36
-        versionCode = 156
-        versionName = "1.1.55"
+        versionCode = 173
+        versionName = "1.1.72"
         testInstrumentationRunner = "android.test.InstrumentationTestRunner"
     }
 
@@ -109,5 +131,7 @@ kotlin {
 }
 
 dependencies {
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
     testImplementation("junit:junit:4.13.2")
 }

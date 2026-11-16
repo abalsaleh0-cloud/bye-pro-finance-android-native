@@ -129,7 +129,11 @@ All dimensions are dp unless the token name ends in `_SP` or explicitly says oth
 | `DIALOG_RADIUS` | 20 | Dialog background corners |
 | `BUTTON_HEIGHT` | 48 | Standard action-button and input height |
 | `TOUCH_TARGET_SIZE` | 44 | Minimum touch target |
-| `SECTION_TAB_HEIGHT` | 48 | Standard section-tab control height |
+| `SECTION_TAB_WIDTH` | 76 | Width of each independent icon tab |
+| `SECTION_TAB_HEIGHT` | 64 | Height of each independent icon tab |
+| `SECTION_TAB_ICON_SIZE` | 22 | Icon size inside an independent tab |
+| `SECTION_TAB_RADIUS` | 12 | Tab surface radius |
+| `SECTION_TAB_GAP` | 4 | Gap between tab icon and label |
 | `SECTION_HEADER_HEIGHT` | 36 | Section heading row |
 | `METRIC_TILE_MIN_HEIGHT` | 64 | Minimum financial metric row |
 | `RECORD_ROW_HEIGHT` | 64 | Minimum transaction row |
@@ -180,12 +184,14 @@ Use these components; do not recreate their visual styling inside a screen.
 | App bar | `FinanceComponents.topBar` | Page title and consistent icon actions |
 | Bottom navigation | `FinanceComponents.bottomNavigation` | Five equal destinations with a shared selected/unselected state |
 | Section heading | `FinanceComponents.sectionHeader` | Consistent section hierarchy |
-| Month selector | `FinanceComponents.monthSelector` | Caption plus selected month and shared touch target |
+| Month selector | `FinanceComponents.monthSelector` | Selected month, saved-month list and calendar action shared by all main sections |
 | Metric row | `FinanceComponents.metricRow` | Financial label, icon and amount |
 | Record row | `FinanceComponents.recordRow` | Transaction/debt/bill row and optional actions |
 | Grouped list | `FinanceComponents.groupedList` | Shared list surface with consistent separators |
 | Content card | `FinanceComponents.card` | Padded surface for chart/panel content |
 | Empty state | `FinanceComponents.emptyState` | Shared empty-result message treatment |
+| Category tabs | `FinanceComponents.categoryTabs` | Independent horizontal Native tabs, each with its own icon and translated label |
+| Category description | `FinanceComponents.categoryDescription` | Consistent explanatory text below the Home category selector |
 | Divider | `FinanceComponents.bottomDivider` | Shared one-pixel separator |
 | Text, input, button, surface and icon helpers | `FinanceDesignSystem` | Primitive styling building blocks |
 
@@ -204,12 +210,31 @@ Use these components; do not recreate their visual styling inside a screen.
 The app has five top-level destinations:
 
 1. **الرئيسية (Dashboard):** monthly selector, financial metric groups, cash-flow comparison and recent activity.
-2. **العمل (Work):** salary, advances and work-payment records.
-3. **المنزل (Home):** transfers, home expenses and bills.
+2. **العمل (Work):** five independent routes using the separate Native icon tabs:
+   - **الراتب:** salary records for the selected month.
+   - **الدفعة:** payments deducted from salary, including legacy `salaryPayment` records.
+   - **السلفة:** advances recorded against salary.
+   - **الباقي:** main figure is cash remaining in Work after transfers to Home; the unpaid portion of salary (salary minus payments and advances) appears as a secondary figure. It is a view, not an Add action.
+   - **تحويلات المنزل:** work-to-home transfer records.
+3. **المنزل (Home):** four independent routes using the same icon-bearing Native tabs:
+   - **الفواتير الشهرية:** electricity, water, gas, internet, phone, recurring services and subscriptions. Reads `home_bills.kind = monthly`.
+   - **الإيجارات الشهرية:** housing rent obligations, due amount, paid installments and payment history. Reads `home_bills.kind = rent`.
+   - **المصروفات:** groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses. Reads `home_expenses`.
+   - **الوارد من العمل:** monthly sum and individual records actually transferred from Work to Home. Reads `work_home_transfers`, filtered to the selected month; the total comes from `DashboardSummary.transfersTotal`.
+
+   Work Add always offers salary, payment, advance and transfer to Home. Home Add always offers monthly bill, monthly rent and expense, regardless of the selected route. The "Remaining" and "From Work" routes display existing or calculated data and do not create another money record.
 4. **الديون (Debts):** creditor/debtor records and payment actions.
 5. **الذكاء الاصطناعي (AI):** the current Native build displays a migration notice; full assistant integration is not yet complete.
 
 A section may arrange approved components differently to suit its data, but may not create a new visual language. Keep Work and Home as separate destinations; do not combine their data into one section.
+
+### Signature Welcome and Login entry surfaces
+
+- Every fresh process starts on Welcome.
+- Welcome is an editorial, full-surface composition: BYE PRO signature, original finance-orbit artwork, strong statement typography, a progress rule and an entry action. It is not a centered card.
+- Login has a separate access-focused composition, the same custom artwork language and open underlined fields. It is not a generic centered login card or boxed stock form.
+- The Welcome action and horizontal swipe both continue. Login follows only while local login protection is enabled.
+- The artwork is drawn natively from the shared light/dark semantic palette; Arabic/English keep the same RTL geometry.
 
 ## 8. Interaction, RTL and accessibility
 
@@ -221,6 +246,8 @@ A section may arrange approved components differently to suit its data, but may 
 - Do not change financial values or persistence logic as part of a visual styling change.
 - Keep labels readable, avoid truncation of amounts, and allow long transaction titles to wrap where appropriate.
 - Test both Light and Dark modes and both languages at phone-sized widths.
+- Check the Welcome swipe and Continue button, Login error state, masked password field, and all four Home categories.
+- Confirm each Home category's Add action writes to its correct data source.
 
 ## 9. Prohibited patterns
 
@@ -250,3 +277,14 @@ Before any UI change is considered complete:
 - [ ] Documentation is updated for every new token or component.
 
 **No exception is implied by a passing build.** A build proves compilation; it does not prove visual consistency on a device.
+
+
+## 11. Native tabs, icons, month and entry requirements
+
+- Work and Home render separate horizontal rows of independent Native tabs. Numbered editorial indexes, shared index rails, and Flutter tab layouts are not used.
+- Work routes are Salary, Payment, Advance, Remaining and Home Transfers. Home routes are Monthly Bills, Monthly Rent, Expenses and Received from Work.
+- Every route has its own icon. Bill and rent use different icons. Each of the nine expense categories has its own icon.
+- Material icon semantics were selected from the Flutter source, but the Native app ships raster PNG resources only. Gradle extracts the compact icon sheet into generated drawable-nodpi PNG resources. No VectorDrawable icon resources remain.
+- The selected-month row appears on Dashboard, Work, Home, Debts and AI. It offers stored/available month selection and the Android calendar picker, constrained to 1900–2100. The selected month persists under `app_settings.selected_month`, matching the Flutter source. Month keys and displayed values use ASCII digits in YYYY-MM format.
+- Every data-entry field has a persistent localized label. Numeric fields use only ASCII digits (0123456789) and stay left-to-right in both languages.
+- Numeric fields expose the shared calculator. It supports scientific expressions, percentages, discounts, splitting, calculation history, copy and result insertion.

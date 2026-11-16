@@ -18,15 +18,15 @@ The Native version is a separate implementation, not proof that all Flutter feat
 | UI/platform | Kotlin with Android framework Views |
 | Package / release application ID | `com.byepro.bye_pro_finance` |
 | Namespace | `com.byepro.bye_pro_finance` |
-| Current release version name | `1.1.55` |
-| Current release version code | `156` |
+| Current Native version name | `1.1.62` |
+| Current Native version code | `163` |
 | Minimum SDK | 30 |
 | Compile SDK | 36 |
 | Target SDK | 36 |
 | Java target | 17 |
 | Kotlin JVM target | 17 |
 | Android Gradle Plugin | 9.3.1 |
-| Kotlin Gradle Plugin | 2.4.20 |
+| Kotlin Gradle Plugin | 2.4.21 |
 
 The debug build adds `.nativepreview` to the application ID. This is deliberate: a debug preview installs alongside the production app and has a separate Android sandbox. It does not read the production app's private database or login state.
 
@@ -38,19 +38,28 @@ A release build has the production application ID. It must not be installed over
 |---|---|
 | `MainActivity.kt` | Single activity, screen navigation, screen composition, dialogs and user actions |
 | `ui/FinanceDesignSystem.kt` | Shared design tokens, palette, typography and primitive view factories |
-| `ui/FinanceComponents.kt` | Reusable app bar, navigation, rows, cards, month selector, empty state and dividers |
+| `ui/FinanceComponents.kt` | Reusable app bar, navigation, independent Native icon tabs, rows, cards, month selector, empty state and dividers |
 | `ui/FinanceAppearance.kt` | System / Light / Dark preference model |
 | `ui/FinancePalette.kt` | Compatibility facade that delegates colors and shapes to the design system |
 | `data/LegacyFinanceDatabase.kt` | Opens and manages the compatible SQLite database |
 | `data/DashboardRepository.kt` | Reads financial records and constructs dashboard summaries |
 | `data/FinanceWriteRepository.kt` | Validates and writes financial operations transactionally |
 | `domain/FinanceModels.kt` | Shared data models exposed to the UI |
+| `domain/HomeCategory.kt` | Exactly four Home categories and their data-source mapping |
 | `app/src/main/res` | Android manifest, string translations, icons, theme and framework resources |
-| `app/src/test` | Unit tests for design tokens, palettes, contrast and appearance |
+| `app/src/test` | Unit tests for design tokens, palettes, contrast, appearance, local login and Home category mapping |
 
 ## 4. Runtime structure and data flow
 
 The current application uses a single `MainActivity` with five destinations: Dashboard, Work, Home, Debts and AI.
+
+### Application-entry flow
+
+1. `onCreate` initializes the existing database, appearance/language preferences and `LocalAuthentication` profile without resetting an existing profile.
+2. `showWelcomeScreen` is the first visible screen for each fresh application process.
+3. Continue button or horizontal swipe calls `continueFromWelcome`.
+4. If local login is enabled, `showLoginScreen` verifies the stored username and password. Otherwise `enterApplication` opens the main shell.
+5. The settings dialog exposes appearance, language and login security. Login security allows credential changes and enable/disable confirmation.
 
 Read flow:
 
@@ -90,11 +99,26 @@ The application ID and release signing lineage must remain compatible for an in-
 | `home_bill_payments` | Bill payment history |
 | `debts` | Creditor and debtor records |
 | `debt_payments` | Debt payment history |
-| `app_settings` | Locale and appearance preferences |
+| `app_settings` | Locale, appearance and device-local login profile/preferences |
 
 Amounts are stored as integer minor units. Dates and timestamps are stored as epoch-millisecond values or as due year/month fields, as appropriate. Keep these storage units unchanged unless a versioned and tested migration is explicitly introduced.
 
-For the complete field-by-field schema, relationships, dashboard formulas and validation invariants, see [DATA_DICTIONARY.md](DATA_DICTIONARY.md).\n\n### Data-safety rules
+For the complete field-by-field schema, relationships, dashboard formulas and validation invariants, see [DATA_DICTIONARY.md](DATA_DICTIONARY.md).
+
+### Home category mapping
+
+`domain/HomeCategory.kt` is the single domain contract for Home:
+
+| Category | Stored source | Filter | Contents |
+|---|---|---|---|
+| Monthly Bills | `home_bills` | `kind = monthly` | Electricity, water, gas, internet, phone, recurring services and subscriptions |
+| Monthly Rent (الإيجارات الشهرية) | `home_bills` | `kind = rent` | Rent obligations and installment/payment history |
+| Expenses | `home_expenses` | No bill-kind filter | Groceries, utilities, housing, cleaning, maintenance, transport, personal, health and other |
+| Received from Work (الوارد من العمل) | `work_home_transfers` | Selected month | Actual money transferred from Work into Home |
+
+The Home Native icon tabs and Add menu must use this mapping. "Received from Work" is a read-only view over existing transfer rows; the transfer is created from the Work Add menu. Work and Home retain distinct financial destinations.
+
+### Data-safety rules
 
 - Never delete or recreate finance tables as part of a UI redesign.
 - Never clear the database to fix a visual defect.
@@ -136,7 +160,7 @@ The UI appearance contract is defined in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
 The following items are **not to be represented as completed** merely because the Native APK compiles:
 
 - The AI destination currently displays a migration notice; the full assistant is not migrated.
-- The current Native calculator is a basic two-value addition form, not feature parity with the richer calculator in the Flutter implementation.
+- The Native calculator supports arithmetic expressions, parentheses, powers, square roots, percentages, discounts and splitting amounts, plus history, copy and insertion into numeric form fields.
 - A debug preview does not demonstrate production database access because it uses a separate package sandbox.
 - Release signing is only configured to accept the existing key through local `key.properties` or environment variables; this repository does not contain the production key.
 - Full sign-in continuity, backup/restore, device-level migration checks and complete financial-feature parity still require proof.
@@ -160,3 +184,6 @@ Release signing values are read from these environment variables:
 - `KEY_ALIAS`
 
 Relative keystore paths in `key.properties` resolve from the Native repository's `app/` directory. Store signing material securely outside source control.
+### Work category mapping
+
+`domain/WorkCategory.kt` defines five ordered routes: salary, payment, advance, remaining and home transfers. Salary/payment/advance read `work_entries` by kind; Remaining uses the existing monthly salary-outstanding calculation; Home Transfers read `work_home_transfers`. Work Add exposes only the four creation operations: salary, payment, advance and transfer to Home.

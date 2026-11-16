@@ -12,6 +12,10 @@ UI = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/ui"
 SCREEN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/MainActivity.kt"
 COMPONENTS = UI / "FinanceComponents.kt"
 SYSTEM = UI / "FinanceDesignSystem.kt"
+HOME_DOMAIN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/domain/HomeCategory.kt"
+WORK_DOMAIN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/domain/WorkCategory.kt"
+STRINGS_AR = ROOT / "app/src/main/res/values/strings.xml"
+STRINGS_EN = ROOT / "app/src/main/res/values-en/strings.xml"
 COLORS = ROOT / "app/src/main/res/values/colors.xml"
 DIMENS = ROOT / "app/src/main/res/values/dimens.xml"
 STYLE_FILES = [
@@ -62,6 +66,10 @@ dimens_xml = read(DIMENS)
 screen = read(SCREEN)
 components = read(COMPONENTS)
 styles = "\n".join(read(path) for path in STYLE_FILES)
+home_domain = read(HOME_DOMAIN)
+work_domain = read(WORK_DOMAIN)
+strings_ar = read(STRINGS_AR)
+strings_en = read(STRINGS_EN)
 
 # Android resource theme colors must mirror the semantic Kotlin palettes.
 xml_colors = {
@@ -117,7 +125,7 @@ for token, resource in dimension_map.items():
 screen_rules = {
     "raw dp literal": r"\bdp\s*\(\s*\d+",
     "direct text size": r"\btextSize\s*=",
-    "literal text-size value": r"\b(?:11|12|13|14|15|16|20)f\b",
+    "literal text-size value": r"(?<![\d.])(?:11|12|13|14|15|16|20)f\b",
     "literal text color": r"setTextColor\s*\(\s*0x",
     "literal background color": r"setBackgroundColor\s*\(\s*0x",
     "ad-hoc parsed color": r"Color\.parseColor",
@@ -128,11 +136,168 @@ for label, pattern in screen_rules.items():
 
 component_rules = {
     "raw dp literal": r"\bdp\s*\(\s*context\s*,\s*\d+",
-    "literal text-size value": r"\b(?:11|12|13|14|15|16|20)f\b",
+    "literal text-size value": r"(?<![\d.])(?:11|12|13|14|15|16|20)f\b",
 }
 for label, pattern in component_rules.items():
     if re.search(pattern, components):
         errors.append(f"FinanceComponents contains {label}; move it into FinanceDesignTokens")
+
+# This repository is a standalone Native Android project, not a Flutter package.
+for forbidden_name in ("pubspec.yaml", "pubspec.lock"):
+    if (ROOT / forbidden_name).exists():
+        errors.append(f"Flutter package file must not exist in the Native repository root: {forbidden_name}")
+for path in ROOT.rglob("*"):
+    if any(part in {".git", ".gradle", "build"} for part in path.parts):
+        continue
+    if path.is_file() and path.suffix == ".dart":
+        errors.append(f"Flutter/Dart source file found in Native repository: {path.relative_to(ROOT)}")
+    if path.is_dir() and path.name in {"ios", "web"}:
+        errors.append(f"Non-Native application directory found in Native repository: {path.relative_to(ROOT)}")
+settings_file = read(ROOT / "settings.gradle.kts")
+if 'include(":app")' not in settings_file or "includeBuild(" in settings_file:
+    errors.append("Standalone Native Gradle settings must include only the app module and no external included build")
+
+# Home has exactly four routes, including amounts actually transferred from Work.
+home_category_markers = {
+    "MONTHLY_BILLS": 'HomeRecordSource.BILLS, billKind = "monthly"',
+    "RENT": 'HomeRecordSource.BILLS, billKind = "rent"',
+    "EXPENSES": "HomeRecordSource.HOME_EXPENSES",
+    "RECEIVED_FROM_WORK": "HomeRecordSource.WORK_TRANSFERS",
+}
+for category, mapping in home_category_markers.items():
+    if category not in home_domain or mapping not in home_domain:
+        errors.append(f"Home category mapping is missing or changed: {category}")
+if len(re.findall(r"^    (?:MONTHLY_BILLS|RENT|EXPENSES|RECEIVED_FROM_WORK)\(", home_domain, flags=re.MULTILINE)) != 4:
+    errors.append("Home must contain exactly four primary categories.")
+
+# Work has five routes; Remaining is a calculated route, not an Add operation.
+work_category_markers = (
+    'SALARY(recordKind = "salary")',
+    'PAYMENT(recordKind = "payment")',
+    'ADVANCE(recordKind = "advance")',
+    "REMAINING(calculated = true)",
+    "HOME_TRANSFERS(transfers = true)",
+)
+for marker in work_category_markers:
+    if marker not in work_domain:
+        errors.append(f"Work category mapping is missing or changed: {marker}")
+if len(re.findall(r"^    (?:SALARY|PAYMENT|ADVANCE|REMAINING|HOME_TRANSFERS)\(", work_domain, flags=re.MULTILINE)) != 5:
+    errors.append("Work must contain exactly five primary routes.")
+
+# Screens consume independent Native tabs and original entry components.
+for marker in (
+    "HomeCategory.ordered.map {",
+    "WorkCategory.ordered.map {",
+    "FinanceComponents.categoryTabs(",
+    "FinanceComponents.balanceStatement(",
+    "FinanceComponents.brandSignature(",
+    "FinanceComponents.entryArtwork(",
+    "FinanceComponents.editorialInput(",
+    "private fun showWelcomeScreen()",
+    "private fun showLoginScreen()",
+    "FinanceDesignSystem.button(",
+):
+    if marker not in screen:
+        errors.append(f"MainActivity is missing required shared UI integration: {marker}")
+if "FinanceComponents.categoryTabs(" not in screen:
+    errors.append("Home and Work must use independent Native icon-bearing tabs.")
+if "FinanceCategoryIndexItem" in screen or "FinanceCategoryIndexItem" in components or "categoryIndex(" in screen or "categoryIndex(" in components:
+    errors.append("The rejected numbered category index must not be present.")
+
+required_raster_icons = (
+    "ic_work_salary", "ic_work_payment", "ic_work_advance", "ic_work_remaining",
+    "ic_work_transfers", "ic_home_bills", "ic_home_rent", "ic_home_expenses",
+    "ic_home_received", "ic_expense_groceries", "ic_expense_utilities",
+    "ic_expense_housing", "ic_expense_cleaning", "ic_expense_maintenance",
+    "ic_expense_transport", "ic_expense_personal", "ic_expense_health", "ic_expense_other",
+)
+for icon_name in required_raster_icons:
+    if icon_name not in screen:
+        errors.append(f"Dedicated icon mapping is missing: {icon_name}")
+icon_sheet = ROOT / "app/src/main/assets/byepro-icons-sheet.png"
+if not icon_sheet.is_file():
+    errors.append("The Native raster icon sheet is missing.")
+if list((ROOT / "app/src/main/res/drawable").glob("ic_*.xml")):
+    errors.append("VectorDrawable icons are prohibited; use generated raster PNG resources.")
+if "generateFinanceRasterIcons" not in read(ROOT / "app/build.gradle.kts"):
+    errors.append("Gradle must generate Native raster icon resources before resource merging.")
+
+# Add menus remain available for every category in their own section.
+create_menu = screen.split("private fun showCreateMenu(anchor: View)", 1)[-1].split("private fun addMenuAction", 1)[0]
+work_menu = create_menu.split("Section.WORK ->", 1)[-1].split("Section.HOME ->", 1)[0]
+home_menu = create_menu.split("Section.HOME ->", 1)[-1].split("Section.DEBTS ->", 1)[0]
+for marker in ("s(R.string.new_salary)", "s(R.string.new_work_payment)", "s(R.string.new_advance)", "s(R.string.new_transfer)"):
+    if marker not in work_menu:
+        errors.append(f"Work Add menu is missing an action: {marker}")
+for marker in ("s(R.string.new_bill)", "s(R.string.new_rent)", "s(R.string.new_expense)"):
+    if marker not in home_menu:
+        errors.append(f"Home Add menu is missing an action: {marker}")
+if "when (selectedHomeCategory)" in home_menu:
+    errors.append("Home Add menu must not depend on the selected Home category.")
+
+# All route names/descriptions and entry copy must be bilingual.
+required_strings = (
+    "home_monthly_bills",
+    "home_rent",
+    "home_expenses",
+    "home_received_from_work",
+    "home_monthly_bills_description",
+    "home_rent_description",
+    "home_expenses_description",
+    "home_received_from_work_description",
+    "home_received_from_work_tag",
+    "home_received_from_work_total",
+    "home_received_from_work_total_caption",
+    "current_salary_outstanding",
+    "work_salary",
+    "work_payment",
+    "work_advance",
+    "work_remaining",
+    "work_home_transfers",
+    "work_salary_tag",
+    "work_payment_tag",
+    "work_advance_tag",
+    "work_remaining_tag",
+    "work_home_transfers_tag",
+    "work_remaining_formula",
+    "welcome_kicker",
+    "welcome_title",
+    "welcome_description",
+    "welcome_step",
+    "entry_brand_meta",
+    "continue_to_login",
+    "swipe_to_continue",
+    "login_kicker",
+    "login_title",
+    "login_description",
+    "login_security_note",
+    "login_invalid",
+    "calculator_expression",
+    "calculator_amount",
+    "calculator_percent",
+    "calculator_people",
+    "calculator_result_placeholder",
+    "calculator_percentage",
+    "calculator_discount",
+    "calculator_split",
+    "calculator_per_person",
+    "calculator_remainder",
+    "calculator_scientific",
+    "calculator_financial",
+    "calculator_calculate",
+    "calculator_history",
+    "calculator_copy",
+    "calculator_copied",
+    "calculator_invalid_expression",
+    "calculator_invalid_financial",
+    "use_result",
+)
+for string_name in required_strings:
+    pattern = rf'<string\s+name="{re.escape(string_name)}">'
+    if not re.search(pattern, strings_ar):
+        errors.append(f"Arabic string resource is missing: {string_name}")
+    if not re.search(pattern, strings_en):
+        errors.append(f"English string resource is missing: {string_name}")
 
 # Hex values belong only in the palette resource, not individual framework styles.
 if re.search(r"#[0-9A-Fa-f]{6,8}", styles):

@@ -96,8 +96,10 @@ class LocalAuthenticationTest {
         manager(settings).initializeIfNeeded()
 
         assertFalse(auth.isEnabled())
-        assertTrue(auth.authenticate("owner", "new-secret"))
-        assertFalse(auth.authenticate("admin", "admin"))
+        assertEquals("owner", auth.currentUsername())
+        assertTrue(auth.verifyPassword("new-secret"))
+        assertFalse(auth.verifyPassword("admin"))
+        assertTrue(auth.authenticate("", ""))
     }
 
     private fun manager(settings: MutableMap<String, String>) =

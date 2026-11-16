@@ -1,21 +1,27 @@
 package com.byepro.bye_pro_finance.ui
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.graphics.Typeface
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.byepro.bye_pro_finance.R
 
-data class FinanceCategoryTab(
-    val title: String,
-    val selected: Boolean,
-    val onClick: () -> Unit
-)
+data class FinanceCategoryTabItem(val title:String,val iconResource:Int,val selected:Boolean,val onClick:()->Unit)
+data class FinanceIconOptionItem(val title:String,val iconResource:Int,val selected:Boolean=false,val onClick:()->Unit)
+
+data class FinanceEditorialField(val container:LinearLayout,val input:EditText)
 
 data class FinanceNavigationItem(
     val title: String,
@@ -142,104 +148,280 @@ object FinanceComponents {
         return bar
     }
 
-    /** Three-way segmented selector for a screen's fixed top-level categories. */
-    fun categoryTabs(
-        context: Context,
-        isDark: Boolean,
-        items: List<FinanceCategoryTab>
-    ): LinearLayout {
-        val palette = FinanceDesignSystem.colors(isDark)
-        return LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            gravity = Gravity.CENTER_VERTICAL
-            background = FinanceDesignSystem.rounded(
-                context,
-                palette.raised,
-                FinanceDesignTokens.CONTROL_RADIUS
-            )
+    /** Horizontal scrolling pill tabs matching Flutter SectionPillTabs. */
+    fun categoryTabs(context:Context,isDark:Boolean,items:List<FinanceCategoryTabItem>):android.widget.HorizontalScrollView {
+        val palette=FinanceDesignSystem.colors(isDark)
+        val tabs=LinearLayout(context).apply {
+            orientation=LinearLayout.HORIZONTAL
+            layoutDirection=View.LAYOUT_DIRECTION_RTL
+            gravity=Gravity.CENTER_VERTICAL
+        }
+        items.forEachIndexed { index,item ->
+            val pill=FinanceDesignSystem.text(
+                context,item.title,FinanceDesignTokens.TEXT_BODY_SP,
+                if(item.selected) palette.onAccent else palette.text,
+                bold=item.selected
+            ).apply {
+                gravity=Gravity.CENTER
+                maxLines=1
+                ellipsize=android.text.TextUtils.TruncateAt.END
+                minWidth=FinanceDesignSystem.dp(context,FinanceDesignTokens.SECTION_TAB_MIN_WIDTH)
+                minHeight=FinanceDesignSystem.dp(context,FinanceDesignTokens.SECTION_TAB_HEIGHT)
+                setPadding(
+                    FinanceDesignSystem.dp(context,FinanceDesignTokens.SECTION_TAB_HORIZONTAL_PADDING),0,
+                    FinanceDesignSystem.dp(context,FinanceDesignTokens.SECTION_TAB_HORIZONTAL_PADDING),0
+                )
+                background=GradientDrawable().apply {
+                    shape=GradientDrawable.RECTANGLE
+                    cornerRadius=FinanceDesignSystem.dp(context,FinanceDesignTokens.SECTION_TAB_RADIUS).toFloat()
+                    setColor(if(item.selected) palette.accent else palette.raised)
+                    setStroke(FinanceDesignSystem.dp(context,FinanceDesignTokens.DIVIDER_HEIGHT),if(item.selected) palette.accent else palette.divider)
+                }
+                isClickable=true
+                isFocusable=true
+                foreground=FinanceDesignSystem.ripple(context,isDark)
+                contentDescription=item.title
+                setOnClickListener { item.onClick() }
+            }
+            tabs.addView(pill,LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.SECTION_TAB_HEIGHT)
+            ).apply {
+                if(index>0) marginStart=FinanceDesignSystem.dp(context,FinanceDesignTokens.SECTION_TAB_GAP)
+            })
+        }
+        return android.widget.HorizontalScrollView(context).apply {
+            isHorizontalScrollBarEnabled=false
+            overScrollMode=View.OVER_SCROLL_NEVER
+            clipToPadding=false
+            layoutDirection=View.LAYOUT_DIRECTION_RTL
             setPadding(
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING)
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),0,
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),0
             )
+            addView(tabs,ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT))
+        }
+    }
 
-            items.forEach { item ->
-                val tab = FinanceDesignSystem.text(
-                    context,
-                    item.title,
-                    FinanceDesignTokens.TEXT_LABEL_SP,
-                    if (item.selected) palette.onAccent else palette.secondaryText,
-                    bold = item.selected
-                ).apply {
-                    gravity = Gravity.CENTER
-                    maxLines = 1
-                    minHeight = FinanceDesignSystem.dp(
-                        context, FinanceDesignTokens.SECTION_TAB_HEIGHT -
-                            (FinanceDesignTokens.NAVIGATION_ITEM_PADDING * 2)
-                    )
-                    setPadding(
-                        FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_2),
-                        0,
-                        FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_2),
-                        0
-                    )
-                    background = FinanceDesignSystem.rounded(
-                        context,
-                        if (item.selected) palette.accent else android.graphics.Color.TRANSPARENT,
-                        FinanceDesignTokens.CONTROL_RADIUS
-                    )
-                    isClickable = true
-                    isFocusable = true
-                    foreground = FinanceDesignSystem.ripple(context, isDark)
-                    contentDescription = item.title
+    /** Icon rows shared by expense-category selection and section Add menus. */
+    fun iconChoiceList(context:Context,isDark:Boolean,items:List<FinanceIconOptionItem>):LinearLayout {
+        val palette=FinanceDesignSystem.colors(isDark)
+        return LinearLayout(context).apply {
+            orientation=LinearLayout.VERTICAL; layoutDirection=View.LAYOUT_DIRECTION_RTL
+            setPadding(FinanceDesignSystem.dp(context,FinanceDesignTokens.CARD_PADDING),FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_8),FinanceDesignSystem.dp(context,FinanceDesignTokens.CARD_PADDING),FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_8))
+            items.forEachIndexed { index,item ->
+                val row=LinearLayout(context).apply {
+                    orientation=LinearLayout.HORIZONTAL; layoutDirection=View.LAYOUT_DIRECTION_RTL; gravity=Gravity.CENTER_VERTICAL
+                    minimumHeight=FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE)
+                    background=if(item.selected) FinanceDesignSystem.rounded(context,palette.accentSoft,FinanceDesignTokens.CONTROL_RADIUS) else ColorDrawable(Color.TRANSPARENT)
+                    isClickable=true; isFocusable=true; foreground=FinanceDesignSystem.ripple(context,isDark); contentDescription=item.title
                     setOnClickListener { item.onClick() }
                 }
-                addView(tab, LinearLayout.LayoutParams(
-                    0,
-                    FinanceDesignSystem.dp(context, FinanceDesignTokens.SECTION_TAB_HEIGHT),
-                    1f
+                val iconBadge=FrameLayout(context).apply {
+                    background=GradientDrawable().apply {
+                        shape=GradientDrawable.OVAL
+                        setColor(if(item.selected) palette.accentSoft else palette.raised)
+                    }
+                }
+                val icon=ImageView(context).apply {
+                    setImageResource(item.iconResource)
+                    setColorFilter(if(item.selected) palette.accent else palette.text)
+                    scaleType=ImageView.ScaleType.CENTER_INSIDE
+                    contentDescription=item.title
+                }
+                iconBadge.addView(icon,FrameLayout.LayoutParams(
+                    FinanceDesignSystem.dp(context,FinanceDesignTokens.STANDARD_ICON_SIZE),
+                    FinanceDesignSystem.dp(context,FinanceDesignTokens.STANDARD_ICON_SIZE),Gravity.CENTER
                 ))
+                row.addView(iconBadge,LinearLayout.LayoutParams(
+                    FinanceDesignSystem.dp(context,FinanceDesignTokens.RECORD_ICON_BOX_SIZE),
+                    FinanceDesignSystem.dp(context,FinanceDesignTokens.RECORD_ICON_BOX_SIZE)
+                ))
+                row.addView(FinanceDesignSystem.text(context,item.title,FinanceDesignTokens.TEXT_BODY_SP,palette.text,bold=item.selected),LinearLayout.LayoutParams(0,FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE),1f).apply {
+                    marginStart=FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_12)
+                })
+                addView(row,LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE)))
+                if(index<items.lastIndex) addView(bottomDivider(context,isDark))
             }
         }
     }
 
-    /** Shared selectable form field for choosing a value from a finite list. */
-    fun selectField(
-        context: Context,
-        isDark: Boolean,
-        label: String,
-        onClick: (TextView) -> Unit
-    ): TextView {
-        val palette = FinanceDesignSystem.colors(isDark)
-        return FinanceDesignSystem.text(
-            context,
-            "$label  ▾",
-            FinanceDesignTokens.TEXT_BODY_SP,
-            palette.text
-        ).apply {
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),
-                0,
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),
-                0
-            )
-            minHeight = FinanceDesignSystem.dp(context, FinanceDesignTokens.BUTTON_HEIGHT)
-            background = FinanceDesignSystem.rounded(
-                context,
-                palette.raised,
-                FinanceDesignTokens.CONTROL_RADIUS
-            )
-            isClickable = true
-            isFocusable = true
-            foreground = FinanceDesignSystem.ripple(context, isDark)
+    fun formIconHeader(context:Context,isDark:Boolean,iconResource:Int,title:String,description:String):LinearLayout {
+        val palette=FinanceDesignSystem.colors(isDark)
+        return LinearLayout(context).apply {
+            orientation=LinearLayout.HORIZONTAL; layoutDirection=View.LAYOUT_DIRECTION_RTL; gravity=Gravity.CENTER_VERTICAL
+            setPadding(0,0,0,FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_12))
+            addView(FinanceDesignSystem.iconBox(context,isDark,iconResource,selected=true),
+                LinearLayout.LayoutParams(
+                    FinanceDesignSystem.dp(context,FinanceDesignTokens.RECORD_ICON_BOX_SIZE),
+                    FinanceDesignSystem.dp(context,FinanceDesignTokens.RECORD_ICON_BOX_SIZE)
+                ))
+            val labels=LinearLayout(context).apply {
+                orientation=LinearLayout.VERTICAL; layoutDirection=View.LAYOUT_DIRECTION_RTL; gravity=Gravity.CENTER_VERTICAL
+                setPadding(FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_12),0,FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_4),0)
+                addView(FinanceDesignSystem.text(context,title,FinanceDesignTokens.TEXT_BODY_SP,palette.text,bold=true))
+                addView(FinanceDesignSystem.text(context,description,FinanceDesignTokens.TEXT_CAPTION_SP,palette.secondaryText))
+            }
+            addView(labels,LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT,1f))
+        }
+    }
+
+    fun balanceStatement(context:Context,isDark:Boolean,title:String,amount:String,caption:String):LinearLayout {
+        val palette=FinanceDesignSystem.colors(isDark)
+        val panel=FinanceDesignSystem.surface(context,isDark)
+        panel.addView(FinanceDesignSystem.text(context,title,
+            FinanceDesignTokens.TEXT_LABEL_SP,palette.secondaryText,bold=true))
+        panel.addView(FinanceDesignSystem.text(context,amount,
+            FinanceDesignTokens.TEXT_BALANCE_SP,palette.text,bold=true).apply {
+            setPadding(0,FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_8),0,
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_8))
+        })
+        panel.addView(View(context).apply { setBackgroundColor(palette.divider) },
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.DIVIDER_HEIGHT)))
+        panel.addView(FinanceDesignSystem.text(context,caption,
+            FinanceDesignTokens.TEXT_CAPTION_SP,palette.secondaryText).apply {
+            setPadding(0,FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_8),0,0)
+        })
+        return panel
+    }
+
+    fun brandSignature(
+        context:Context,isDark:Boolean,markResource:Int,descriptor:String,sequence:String
+    ):LinearLayout {
+        val palette=FinanceDesignSystem.colors(isDark)
+        return LinearLayout(context).apply {
+            orientation=LinearLayout.HORIZONTAL
+            layoutDirection=View.LAYOUT_DIRECTION_RTL
+            gravity=Gravity.CENTER_VERTICAL
+            val mark=ImageView(context).apply {
+                setImageResource(markResource)
+                scaleType=ImageView.ScaleType.CENTER_INSIDE
+                background=FinanceDesignSystem.rounded(context,palette.accentSoft,FinanceDesignTokens.CONTROL_RADIUS)
+                val pad=FinanceDesignSystem.dp(context,FinanceDesignTokens.ENTRY_MARK_PADDING)
+                setPadding(pad,pad,pad,pad)
+                contentDescription="BYE PRO"
+            }
+            addView(mark,LinearLayout.LayoutParams(
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.ENTRY_BRAND_ICON_SIZE),
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.ENTRY_BRAND_ICON_SIZE)))
+            val words=LinearLayout(context).apply {
+                orientation=LinearLayout.VERTICAL
+                layoutDirection=View.LAYOUT_DIRECTION_RTL
+                setPadding(FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_8),0,0,0)
+                addView(FinanceDesignSystem.text(context,"BYE PRO",
+                    FinanceDesignTokens.TEXT_SECTION_TITLE_SP,palette.text,bold=true))
+                addView(FinanceDesignSystem.text(context,descriptor,
+                    FinanceDesignTokens.TEXT_CAPTION_SP,palette.secondaryText))
+            }
+            addView(words,LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT,1f))
+            addView(FinanceDesignSystem.text(context,sequence,
+                FinanceDesignTokens.TEXT_CAPTION_SP,palette.secondaryText,bold=true))
+        }
+    }
+
+    /** Original finance-orbit artwork drawn natively from semantic palette colors. */
+    fun entryArtwork(context:Context,isDark:Boolean,markResource:Int):FrameLayout {
+        val palette=FinanceDesignSystem.colors(isDark)
+        return FrameLayout(context).apply {
+            background=ColorDrawable(Color.TRANSPARENT)
+            val orbit=object:View(context) {
+                private val stroke=Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    style=Paint.Style.STROKE
+                    strokeWidth=FinanceDesignSystem.dp(context,FinanceDesignTokens.ENTRY_ARTWORK_STROKE).toFloat()
+                }
+                private val fill=Paint(Paint.ANTI_ALIAS_FLAG).apply { style=Paint.Style.FILL }
+                override fun onDraw(canvas:Canvas) {
+                    super.onDraw(canvas)
+                    val cx=width*.54f; val cy=height*.48f
+                    val r=minOf(width*.30f,height*.43f)
+                    val outer=RectF(cx-r,cy-r,cx+r,cy+r)
+                    val inner=RectF(cx-r*.68f,cy-r*.68f,cx+r*.68f,cy+r*.68f)
+                    stroke.color=palette.divider
+                    canvas.drawCircle(cx,cy,r*1.28f,stroke)
+                    canvas.drawCircle(cx,cy,r,stroke)
+                    stroke.color=palette.accentSoft
+                    canvas.drawArc(outer,24f,112f,false,stroke)
+                    canvas.drawArc(inner,198f,126f,false,stroke)
+                    val lx=cx-r*.92f; val ly=cy+r*.44f
+                    val tx=cx+r*.48f; val ty=cy-r*.92f
+                    val rx=cx+r*1.12f; val ry=cy+r*.18f
+                    stroke.color=palette.divider
+                    canvas.drawLine(lx,ly,cx,cy,stroke)
+                    canvas.drawLine(cx,cy,tx,ty,stroke)
+                    canvas.drawLine(cx,cy,rx,ry,stroke)
+                    fill.color=palette.accent; canvas.drawCircle(lx,ly,r*.075f,fill)
+                    fill.color=palette.positive; canvas.drawCircle(tx,ty,r*.065f,fill)
+                    fill.color=palette.accent; canvas.drawCircle(rx,ry,r*.055f,fill)
+                    val base=height*.88f; val bw=width*.025f
+                    val xs=floatArrayOf(width*.12f,width*.19f,width*.26f,width*.33f)
+                    val hs=floatArrayOf(.18f,.28f,.42f,.58f)
+                    fill.color=palette.accentSoft
+                    for(i in xs.indices) {
+                        val top=base-height*hs[i]*.36f
+                        canvas.drawRoundRect(RectF(xs[i],top,xs[i]+bw,base),bw,bw,fill)
+                    }
+                    stroke.color=palette.divider
+                    canvas.drawLine(width*.08f,base,width*.40f,base,stroke)
+                }
+            }
+            addView(orbit,FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT))
+            val mark=ImageView(context).apply {
+                setImageResource(markResource)
+                scaleType=ImageView.ScaleType.CENTER_INSIDE
+                background=FinanceDesignSystem.rounded(context,palette.surface,FinanceDesignTokens.ENTRY_ORBIT_CENTER_RADIUS)
+                val pad=FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_12)
+                setPadding(pad,pad,pad,pad)
+                contentDescription="BYE PRO Finance"
+            }
+            addView(mark,FrameLayout.LayoutParams(
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.ENTRY_ORBIT_MARK_SIZE),
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.ENTRY_ORBIT_MARK_SIZE),Gravity.CENTER))
+        }
+    }
+
+    fun editorialInput(
+        context:Context,isDark:Boolean,label:String,hint:String,initialValue:String=""
+    ):FinanceEditorialField {
+        val palette=FinanceDesignSystem.colors(isDark)
+        val column=LinearLayout(context).apply {
+            orientation=LinearLayout.VERTICAL
+            layoutDirection=View.LAYOUT_DIRECTION_RTL
+        }
+        column.addView(FinanceDesignSystem.text(context,label,
+            FinanceDesignTokens.TEXT_CAPTION_SP,palette.secondaryText,bold=true).apply {
+            setPadding(0,0,0,FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_4))
+        })
+        val input=FinanceDesignSystem.input(context,isDark,hint,initialValue=initialValue).apply {
+            background=ColorDrawable(Color.TRANSPARENT)
+            setPadding(FinanceDesignSystem.dp(context,FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),0,
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),0)
+            minHeight=FinanceDesignSystem.dp(context,FinanceDesignTokens.ENTRY_FIELD_HEIGHT)
+            isSingleLine=true
+        }
+        column.addView(input,LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+            FinanceDesignSystem.dp(context,FinanceDesignTokens.ENTRY_FIELD_HEIGHT)))
+        column.addView(View(context).apply { setBackgroundColor(palette.divider) },
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                FinanceDesignSystem.dp(context,FinanceDesignTokens.DIVIDER_HEIGHT)))
+        return FinanceEditorialField(column,input)
+    }
+
+    fun selectField(context:Context,isDark:Boolean,label:String,iconResource:Int,onClick:(TextView)->Unit):TextView {
+        val palette=FinanceDesignSystem.colors(isDark)
+        return FinanceDesignSystem.text(context,label,FinanceDesignTokens.TEXT_BODY_SP,palette.text).apply {
+            gravity=Gravity.CENTER_VERTICAL
+            setPadding(FinanceDesignSystem.dp(context,FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),0,FinanceDesignSystem.dp(context,FinanceDesignTokens.INPUT_HORIZONTAL_PADDING),0)
+            minHeight=FinanceDesignSystem.dp(context,FinanceDesignTokens.BUTTON_HEIGHT)
+            background=FinanceDesignSystem.rounded(context,palette.raised,FinanceDesignTokens.CONTROL_RADIUS)
+            setCompoundDrawablesRelativeWithIntrinsicBounds(iconResource,0,0,0)
+            compoundDrawablePadding=FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_12)
+            compoundDrawableTintList=android.content.res.ColorStateList.valueOf(palette.accent)
+            isClickable=true; isFocusable=true; foreground=FinanceDesignSystem.ripple(context,isDark)
             setOnClickListener { onClick(this) }
         }
     }
 
-    /** Supporting copy below the selected category tabs. */
     fun categoryDescription(
         context: Context,
         isDark: Boolean,
@@ -280,63 +462,22 @@ object FinanceComponents {
         }
     }
 
-    /** Standard month caption and selector used by all month-aware screens. */
-    fun monthSelector(
-        context: Context,
-        isDark: Boolean,
-        caption: String,
-        selectedMonth: String,
-        contentDescription: String,
-        onClick: (View) -> Unit
-    ): LinearLayout {
-        val palette = FinanceDesignSystem.colors(isDark)
+    /** Shared selected-month control with available months and a calendar action. */
+    fun monthSelector(context:Context,isDark:Boolean,caption:String,selectedMonth:String,contentDescription:String,onClick:(View)->Unit,onCalendarClick:(View)->Unit):LinearLayout {
+        val palette=FinanceDesignSystem.colors(isDark)
         return LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_2),
-                0, FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_2))
-
-            val label = FinanceDesignSystem.text(
-                context,
-                caption,
-                FinanceDesignTokens.TEXT_LABEL_SP,
-                palette.secondaryText,
-                bold = true
-            )
-            addView(label, LinearLayout.LayoutParams(
-                0,
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.BUTTON_HEIGHT),
-                1f
-            ))
-
-            val month = FinanceDesignSystem.text(
-                context,
-                "$selectedMonth  ▾",
-                FinanceDesignTokens.TEXT_BODY_SP,
-                palette.accent,
-                bold = true
-            ).apply {
-                gravity = Gravity.CENTER
-                setPadding(
-                    FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8),
-                    0,
-                    FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8),
-                    0
-                )
-                minHeight = FinanceDesignSystem.dp(
-                    context, FinanceDesignTokens.TOUCH_TARGET_SIZE
-                )
-                this.contentDescription = contentDescription
-                isClickable = true
-                isFocusable = true
-                foreground = FinanceDesignSystem.ripple(context, isDark)
-                setOnClickListener { clickedView -> onClick(clickedView) }
+            orientation=LinearLayout.HORIZONTAL; layoutDirection=View.LAYOUT_DIRECTION_RTL; gravity=Gravity.CENTER_VERTICAL
+            setPadding(0,FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_2),0,FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_2))
+            addView(FinanceDesignSystem.text(context,caption,FinanceDesignTokens.TEXT_LABEL_SP,palette.secondaryText,bold=true),LinearLayout.LayoutParams(0,FinanceDesignSystem.dp(context,FinanceDesignTokens.BUTTON_HEIGHT),1f))
+            val month=FinanceDesignSystem.text(context,"$selectedMonth  ▾",FinanceDesignTokens.TEXT_BODY_SP,palette.accent,bold=true).apply {
+                gravity=Gravity.CENTER; minHeight=FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE)
+                setPadding(FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_8),0,FinanceDesignSystem.dp(context,FinanceDesignTokens.SPACE_8),0)
+                this.contentDescription=contentDescription; isClickable=true; isFocusable=true; foreground=FinanceDesignSystem.ripple(context,isDark)
+                setOnClickListener { onClick(this) }
             }
-            addView(month, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.TOUCH_TARGET_SIZE)
-            ))
+            addView(month,LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE)))
+            addView(FinanceDesignSystem.iconAction(context,isDark,R.drawable.ic_calendar,context.getString(com.byepro.bye_pro_finance.R.string.calendar)) { onCalendarClick(this) },
+                LinearLayout.LayoutParams(FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE),FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE)))
         }
     }
 

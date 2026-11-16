@@ -69,11 +69,10 @@ object FinanceDesignTokens {
     const val NAVIGATION_ICON_SLOT_HEIGHT = 30
     const val NAVIGATION_LABEL_HEIGHT = 20
     const val NAVIGATION_CONTENT_HEIGHT = NAVIGATION_BAR_HEIGHT - 8
-    const val SECTION_TAB_HEIGHT = 48
     const val SECTION_HEADER_HEIGHT = 36
     const val METRIC_TILE_MIN_HEIGHT = 64
-    const val RECORD_ICON_BOX_SIZE = 40
-    const val STANDARD_ICON_SIZE = 20
+    const val RECORD_ICON_BOX_SIZE = 48
+    const val STANDARD_ICON_SIZE = 26
     const val DIVIDER_HEIGHT = 1
     const val LIST_DIVIDER_START_INSET = 56
     const val RECORD_ROW_HEIGHT = 64
@@ -81,6 +80,36 @@ object FinanceDesignTokens {
     const val MULTILINE_INPUT_HEIGHT = 80
     const val WELCOME_ICON_SIZE = 64
     const val SWIPE_THRESHOLD = 72
+    const val BOTTOM_SHEET_HANDLE_WIDTH = 40
+    const val MONTH_PICKER_ROW_HEIGHT = 56
+    const val MONTH_PICKER_LIST_HEIGHT = 300
+    const val CALENDAR_WEEKDAY_HEIGHT = 34
+    const val CALENDAR_DAY_CELL_HEIGHT = 42
+    const val DIALOG_HORIZONTAL_MARGIN = 32
+    const val DIALOG_MAX_WIDTH = 420
+    const val CALCULATOR_CHIP_HEIGHT = 38
+
+    // Flutter-style horizontally scrolling pill tabs.
+    const val SECTION_TAB_MIN_WIDTH = 88
+    const val SECTION_TAB_HEIGHT = 44
+    const val SECTION_TAB_HORIZONTAL_PADDING = 16
+    const val SECTION_TAB_RADIUS = 12
+    const val SECTION_TAB_GAP = 8
+    const val TEXT_ENTRY_TITLE_SP = 30f
+    const val TEXT_ENTRY_KICKER_SP = 12f
+    const val TEXT_BALANCE_SP = 28f
+    const val ENTRY_BRAND_ROW_HEIGHT = 44
+    const val ENTRY_BRAND_ICON_SIZE = 36
+    const val ENTRY_MARK_PADDING = SPACE_6
+    const val ENTRY_ARTWORK_HEIGHT = 184
+    const val ENTRY_LOGIN_ARTWORK_HEIGHT = 112
+    const val ENTRY_ORBIT_MARK_SIZE = 64
+    const val ENTRY_ORBIT_CENTER_RADIUS = 36
+    const val ENTRY_ARTWORK_STROKE = 1
+    const val ENTRY_FIELD_HEIGHT = 52
+    const val ENTRY_FIELD_BOTTOM_SPACE = SPACE_12
+    const val ENTRY_ERROR_HEIGHT = 32
+    const val ENTRY_FOOTER_HEIGHT = 32
 
     // Comparison chart geometry (dp).
     const val CHART_LABEL_ROW_HEIGHT = 24
@@ -215,11 +244,10 @@ object FinanceDesignSystem {
     ): FrameLayout {
         val palette = colors(isDark)
         return FrameLayout(context).apply {
-            background = rounded(
-                context,
-                if (selected) palette.accentSoft else palette.raised,
-                FinanceDesignTokens.CONTROL_RADIUS
-            )
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(if (selected) palette.accentSoft else palette.raised)
+            }
             val image = ImageView(context).apply {
                 setImageResource(iconResource)
                 imageTintList = ColorStateList.valueOf(
@@ -245,11 +273,10 @@ object FinanceDesignSystem {
         contentDescription = description
         isClickable = true
         isFocusable = true
-        background = rounded(
-            context,
-            colors(isDark).background,
-            FinanceDesignTokens.CONTROL_RADIUS
-        )
+        background = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(colors(isDark).background)
+        }
         val image = ImageView(context).apply {
             setImageResource(iconResource)
             imageTintList = ColorStateList.valueOf(colors(isDark).text)
