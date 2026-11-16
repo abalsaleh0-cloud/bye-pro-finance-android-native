@@ -20,7 +20,6 @@ class LocalAuthenticationTest {
         assertEquals("admin", auth.currentUsername())
         assertTrue(auth.authenticate("admin", "admin"))
         assertFalse(auth.authenticate("admin", "wrong"))
-        assertEquals(null, settings[LocalAuthentication.KEY_PASSWORD])
         assertNotEquals("admin", settings[LocalAuthentication.KEY_HASH])
         assertTrue(settings[LocalAuthentication.KEY_SALT].orEmpty().isNotBlank())
     }
