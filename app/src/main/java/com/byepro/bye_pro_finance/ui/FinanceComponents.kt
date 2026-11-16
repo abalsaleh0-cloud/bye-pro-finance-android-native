@@ -33,14 +33,14 @@ object FinanceComponents {
             setPadding(
                 FinanceDesignSystem.dp(context, FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
                 0,
-                FinanceDesignSystem.dp(context, 8),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8),
                 0
             )
             setBackgroundColor(palette.background)
         }
 
         val heading = FinanceDesignSystem.text(
-            context, title, 20f, palette.text, bold = true
+            context, title, FinanceDesignTokens.TEXT_PAGE_TITLE_SP, palette.text, bold = true
         )
         bar.addView(heading, LinearLayout.LayoutParams(0,
             FinanceDesignSystem.dp(context, FinanceDesignTokens.APP_BAR_HEIGHT), 1f))
@@ -68,10 +68,10 @@ object FinanceComponents {
             layoutDirection = View.LAYOUT_DIRECTION_RTL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(
-                FinanceDesignSystem.dp(context, 4),
-                FinanceDesignSystem.dp(context, 4),
-                FinanceDesignSystem.dp(context, 4),
-                FinanceDesignSystem.dp(context, 4)
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_HORIZONTAL_PADDING)
             )
             setBackgroundColor(palette.surface)
         }
@@ -85,10 +85,10 @@ object FinanceComponents {
                 foreground = FinanceDesignSystem.ripple(context, isDark)
                 setOnClickListener { item.onClick() }
                 setPadding(
-                    FinanceDesignSystem.dp(context, 2),
-                    FinanceDesignSystem.dp(context, 2),
-                    FinanceDesignSystem.dp(context, 2),
-                    FinanceDesignSystem.dp(context, 2)
+                    FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
+                    FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
+                    FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING),
+                    FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ITEM_PADDING)
                 )
             }
 
@@ -108,14 +108,14 @@ object FinanceComponents {
                 ))
             }
             cell.addView(iconHolder, LinearLayout.LayoutParams(
-                FinanceDesignSystem.dp(context, 38),
-                FinanceDesignSystem.dp(context, 30)
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ICON_SLOT_WIDTH),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_ICON_SLOT_HEIGHT)
             ))
 
             val label = FinanceDesignSystem.text(
                 context,
                 item.title,
-                11f,
+                FinanceDesignTokens.TEXT_NAVIGATION_SP,
                 if (item.selected) palette.accent else palette.secondaryText,
                 bold = item.selected
             ).apply {
@@ -124,11 +124,11 @@ object FinanceComponents {
             }
             cell.addView(label, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                FinanceDesignSystem.dp(context, 20)
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_LABEL_HEIGHT)
             ))
             bar.addView(cell, LinearLayout.LayoutParams(
                 0,
-                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_BAR_HEIGHT - 8),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.NAVIGATION_CONTENT_HEIGHT),
                 1f
             ))
         }
@@ -151,7 +151,7 @@ object FinanceComponents {
                 FinanceDesignSystem.dp(context, FinanceDesignTokens.SECTION_HEADER_HEIGHT), 1f))
             if (!trailing.isNullOrBlank()) {
                 addView(FinanceDesignSystem.text(
-                    context, trailing, 12f, palette.accent, bold = true
+                    context, trailing, FinanceDesignTokens.TEXT_CAPTION_SP, palette.accent, bold = true
                 ))
             }
         }
@@ -174,10 +174,10 @@ object FinanceComponents {
                 context, FinanceDesignTokens.METRIC_TILE_MIN_HEIGHT
             )
             setPadding(
-                FinanceDesignSystem.dp(context, 12),
-                FinanceDesignSystem.dp(context, 8),
-                FinanceDesignSystem.dp(context, 12),
-                FinanceDesignSystem.dp(context, 8)
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8)
             )
         }
         val icon = FinanceDesignSystem.iconBox(context, isDark, iconResource, emphasized)
@@ -187,19 +187,19 @@ object FinanceComponents {
         ))
 
         val label = FinanceDesignSystem.text(
-            context, title, 14f,
+            context, title, FinanceDesignTokens.TEXT_BODY_SP,
             if (emphasized) palette.accent else palette.text,
             bold = emphasized
         ).apply {
-            setPadding(FinanceDesignSystem.dp(context, 12), 0,
-                FinanceDesignSystem.dp(context, 6), 0)
+            setPadding(FinanceDesignSystem.dp(context, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING), 0,
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_6), 0)
             maxLines = 2
         }
         row.addView(label, LinearLayout.LayoutParams(0,
             FinanceDesignSystem.dp(context, FinanceDesignTokens.BUTTON_HEIGHT), 1f))
 
         val amount = FinanceDesignSystem.text(
-            context, value, 16f,
+            context, value, FinanceDesignTokens.TEXT_VALUE_SP,
             if (emphasized) palette.accent else palette.text,
             bold = true
         )
@@ -229,10 +229,10 @@ object FinanceComponents {
                 context, FinanceDesignTokens.RECORD_ROW_HEIGHT
             )
             setPadding(
-                FinanceDesignSystem.dp(context, 12),
-                FinanceDesignSystem.dp(context, 8),
-                FinanceDesignSystem.dp(context, 12),
-                FinanceDesignSystem.dp(context, 8)
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8)
             )
         }
 
@@ -245,22 +245,22 @@ object FinanceComponents {
         val detail = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(FinanceDesignSystem.dp(context, 12), 0,
-                FinanceDesignSystem.dp(context, 8), 0)
+            setPadding(FinanceDesignSystem.dp(context, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING), 0,
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8), 0)
         }
         detail.addView(FinanceDesignSystem.text(
-            context, title, 14f, palette.text, bold = true
+            context, title, FinanceDesignTokens.TEXT_BODY_SP, palette.text, bold = true
         ))
         if (subtitle.isNotBlank()) {
             detail.addView(FinanceDesignSystem.text(
-                context, subtitle, 12f, palette.secondaryText
+                context, subtitle, FinanceDesignTokens.TEXT_CAPTION_SP, palette.secondaryText
             ).apply { maxLines = 1 })
         }
         row.addView(detail, LinearLayout.LayoutParams(0,
             FinanceDesignSystem.dp(context, FinanceDesignTokens.BUTTON_HEIGHT), 1f))
 
         row.addView(FinanceDesignSystem.text(
-            context, amount, 15f, palette.text, bold = true
+            context, amount, FinanceDesignTokens.TEXT_AMOUNT_SP, palette.text, bold = true
         ))
         if (onClick != null || onLongClick != null) {
             row.isClickable = true
