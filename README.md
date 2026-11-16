@@ -22,12 +22,12 @@ Read the relevant contract before changing code.
 
 - Native UI: Kotlin with Android framework Views.
 - Top-level destinations: **الرئيسية، العمل، المنزل، الديون، الذكاء الاصطناعي**.
-- Home has four routes: Monthly Bills, Monthly Rent, Expenses and From Work (actual Home transfers). Work has five routes: Salary, Payment, Advance, Remaining and Home Transfers. Both use the same numbered editorial index.
+- Home has four independent Native icon tabs: Monthly Bills, Monthly Rent, Expenses and From Work (actual Home transfers). Work has five independent Native icon tabs: Salary, Payment, Advance, Remaining and Home Transfers. Every tab has its own icon; the rejected numbered index is not used.
 - Design: one shared Design System for all screens, dialogs, popups, forms, navigation and empty states.
 - Appearance: System, Light and Dark. Only colors change; geometry stays fixed.
 - Language: Arabic by default. English changes text only; the interface remains RTL.
 - Release application ID: `com.byepro.bye_pro_finance`.
-- Native version: `1.1.57 (158)`.
+- Native version: `1.1.62 (163)`.
 - Debug preview suffix: `.nativepreview`; its app sandbox is isolated from production.
 - Database: compatible SQLite file `bye_pro_finance.sqlite`, schema version 2.
 
@@ -35,7 +35,7 @@ Read the relevant contract before changing code.
 
 1. All UI styling must use `FinanceDesignTokens`, `FinanceDesignSystem`, and `FinanceComponents`. Do not introduce local colors, font sizes, spacing, radii, or control styles.
 2. Every visible user-facing string must exist in both Arabic and English resources.
-3. Work and Home remain separate sections. The three Home categories must keep their documented data-source mapping.
+3. Work and Home remain separate sections. All four Home categories must keep their documented data-source mapping.
 4. Financial reads belong in `DashboardRepository`; writes and validation belong in `FinanceWriteRepository`.
 5. Any new component, token, data rule, or screen flow requires tests and documentation updates.
 6. Do not change the Flutter repository or web source project during Native work.
@@ -44,10 +44,18 @@ Read the relevant contract before changing code.
 ## Main code entry points
 
 - `ui/FinanceDesignSystem.kt`: semantic tokens, palettes and primitive view helpers.
-- `ui/FinanceComponents.kt`: shared category index, original finance-orbit entry art, editorial fields and shared UI components.
+- `ui/FinanceComponents.kt`: native icon tabs, raster icon pipeline, original finance-orbit entry art, editorial fields and shared UI components.
 - `domain/HomeCategory.kt` and `domain/WorkCategory.kt`: four Home routes and five Work routes with data-source mapping.
 - `data/LocalAuthentication.kt`: device-local login and password verifier.
 - `MainActivity.kt`: navigation, welcome/login entry and screen composition.
+
+## Navigation, month, icons and calculator
+
+- Work and Home have separate Native horizontal tabs with five and four destinations respectively; no numbered index or Flutter tab layout is used.
+- Tabs, bills, rent and all nine expense categories map to dedicated raster PNG icons generated from `app/src/main/assets/byepro-icons-sheet.png` by `scripts/generate_raster_icons.py`. VectorDrawable icon artwork is not used.
+- The selected month is shared across all sections and persisted under `app_settings.selected_month`, matching the Flutter preference key.
+- The native calendar picker and available-month list follow the Flutter month-selection semantics. Numeric input uses ASCII digits `0123456789` and remains LTR.
+- The calculator supports expressions, percentages, discounts and split amounts, with history, copy and insertion into the active field.
 
 ## Build and test
 

@@ -1,63 +1,71 @@
 # Native Implementation Status
 
 **Repository:** `abalsaleh0-cloud/bye-pro-finance-android-native`  
-**Baseline:** standalone Kotlin Native extraction, version configured as `1.1.57 (158)`
+**Current Native version:** `1.1.62 (163)`  
+**Scope:** Native Android only. Flutter and web repositories are read-only/out of scope.
 
-This file separates implemented work from incomplete work. A task is not marked complete solely because code exists or a debug build succeeds.
+This file separates source implementation, automated verification and device/release acceptance. A passing CI build is not a substitute for real-device testing.
 
 ## Implemented in the current source
 
-- [x] Standalone Native Android project at repository root.
-- [x] Kotlin Android Views implementation.
-- [x] Five destinations: Dashboard, Work, Home, Debts and AI.
-- [x] Central design token object for spacing, typography, radii and dimensions.
-- [x] Shared Light and Dark semantic palettes.
-- [x] Shared components for app bar, navigation, section heading, month selector, numbered editorial category index, metric row, record row, grouped list, card, empty state and divider.
-- [x] Four Home routes in order: monthly bills, monthly rent (الإيجارات الشهرية), household expenses and received from Work. The fourth route reads real `work_home_transfers` records and displays their monthly total.
-- [x] Five Work routes in order: Salary, Payment, Advance, Remaining and Home Transfers, with four Add actions only. Remaining is a calculated view.
-- [x] Work and Home use the same numbered editorial index instead of segmented tabs.
-- [x] Non-card Welcome and Login compositions with original finance-orbit artwork and open underlined login fields.
-- [x] Local login initialized with `admin` / `admin` when no saved profile exists.
-- [x] Settings flow to change username/password and enable or disable login protection.
-- [x] Login profile persists in `app_settings`; password is stored only as a salted PBKDF2 verifier.
-- [x] Automated four-route Home mapping tests, five-route Work mapping tests and local-authentication behaviour tests.
-- [x] CI parity checker for Kotlin palette vs Android XML resources, core dimensions and screen-local styling guardrails.
-- [x] Appearance modes: System, Light and Dark.
-- [x] Arabic default strings and English string resources.
-- [x] SQLite helper targeting the existing Flutter/Drift database file and schema version 2.
-- [x] Repository separation: Native development is isolated from Flutter and web repositories.
-- [x] Debug application ID suffix `.nativepreview`.
-- [x] CI workflow for unit tests and Native debug APK assembly.
+- [x] Standalone Kotlin Android project using Android framework Views.
+- [x] Five top-level destinations: Dashboard, Work, Home, Debts and AI.
+- [x] Shared Light, Dark and System Design System; Arabic is default and English changes text only while RTL geometry remains fixed.
+- [x] Welcome and Login flows with swipe/Continue entry, local credentials, editable username/password and login-protection toggle.
+- [x] Work has exactly five independent Native icon tabs in the requested order: الراتب، الدفعة، السلفة، الباقي، تحويلات المنزل.
+- [x] Home remains separate and has exactly four independent Native icon tabs: الفواتير الشهرية، الإيجارات الشهرية، المصروفات، الوارد من العمل.
+- [x] Every tab has a dedicated icon. Bills and rent are distinct; all nine expense categories have separate icons.
+- [x] The rejected numbered editorial index is not used; tabs are Native Android components, not copied Flutter tabs.
+- [x] Icons are generated raster PNG resources from the source sprite sheet. The generator supports grayscale-alpha and RGBA PNG; VectorDrawable icon files are not used.
+- [x] Home "الوارد من العمل" reads actual `work_home_transfers` rows for the selected month and displays the real monthly transfer total.
+- [x] Work Add contains salary, payment, advance and transfer-to-Home actions. The calculated Remaining tab is not an Add action.
+- [x] Home Add always contains monthly bill, monthly rent and expense actions.
+- [x] Work Remaining displays `summary.workRemaining`, with `summary.currentSalaryOutstanding` separately.
+- [x] Shared month selector and Android calendar picker are used in Dashboard, Work, Home, Debts and AI. The month persists under `app_settings.selected_month`, matching the Flutter source.
+- [x] Numeric form and calculator inputs accept ASCII digits `0123456789` only and remain LTR.
+- [x] Calculator supports arithmetic expressions, parentheses, powers, square roots, percentages, discounts, split amounts, history, copy and result insertion.
+- [x] Local authentication uses a salted PBKDF2-HMAC-SHA256 verifier; plaintext passwords are not stored.
+- [x] Financial reads and writes stay in the repository layer. No database schema change is part of this update.
+- [x] Design guardrails check palette parity, dimensions, Home/Work mappings, independent tabs, raster icon mappings and bilingual strings.
 
-## Present but limited
+## Automated verification — passed
 
-- [ ] AI destination: currently a migration notice, not the completed assistant.
-- [ ] Calculator: currently adds two entered values only; not parity with the richer Flutter calculator.
-- [ ] UI test coverage: current unit tests cover design tokens, palette contrast and appearance rules; full screen/device screenshot coverage is not present.
-- [ ] Financial-rule regression coverage: repository operations exist, but full automated coverage of all balance, debt, bill and payment paths is still required.
-- [ ] Navigation and form interactions: require full device walkthrough in both themes and both languages.
-- [ ] Welcome swipe, login keyboard/masking, login toggle on fresh process launch, all four Home routes/Add flows, all five Work routes/four Add actions and balance totals require real-device acceptance.
+CI run: `43966393925`  
+Commit: `00916f795f075700d1cb50280ee71989501ab1ec`
 
-## Current CI status and immediate verification
+- [x] 28 unit tests passed.
+- [x] `python3 scripts/check_design_system.py` passed.
+- [x] Native application ID validation passed.
+- [x] Debug APK assembly passed.
+- [x] Preview artifact upload passed.
 
-- The latest completed run before the current changes (`43941131356`) passed unit tests and Kotlin compilation but exposed a false positive in the geometry/font-size guard. The guard was corrected to distinguish numeric drawing ratios from text sizes.
-- The current run (`43942352286`) must pass unit tests, the Design System checker, application identity validation and APK assembly before the updated preview is considered verified.
-- Native version is `1.1.57 (158)` for this development update. The current CI run (`43942352286`) is pending; do not mark the latest APK as verified until all steps pass. No production APK has been approved or issued.
+Artifact: `bye-pro-finance-native-preview` (ID `14278020563`; ZIP size 1,039,064 bytes; expires 2026-11-23). The APK inside is 3,184,092 bytes and its ZIP integrity test passed.
 
-## Not yet proven / release blockers
+## Present but incomplete
 
-- [ ] Production signing key continuity verified against installed production APK.
-- [ ] In-place update test with production application ID.
-- [ ] Existing finance records verified after Native update using a protected test copy.
-- [ ] Existing login/session state continuity verified.
-- [ ] Backup and restore tested.
-- [ ] Full feature parity review against the Flutter source.
-- [ ] Real-device visual and functional acceptance.
-- [ ] User approval for production release.
+- [ ] AI destination remains a migration notice; the full AI assistant is not migrated.
+- [ ] No full screenshot/UI automation suite covers every screen size, theme and locale.
+- [ ] Full financial-rule regression coverage against representative legacy databases is still required.
+- [ ] The app has not been installed and walked through on the user's physical phone during this task.
 
-## Rules for updating this file
+## Physical-device acceptance still required
 
-- Change `[ ]` to `[x]` only after the named check has passed.
-- Add the evidence beside the item: test name, CI run, or device test record.
-- Keep incomplete work visible. Do not describe a migration blocker as complete.
-- Any new UI token or component must also be documented in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
+- [ ] Install and launch the preview APK on the target Android phone.
+- [ ] Verify Welcome, swipe and Continue behaviour.
+- [ ] Verify login, invalid-password feedback, changing credentials and disabling/re-enabling protection after force-stop/reopen.
+- [ ] Check all five Work tabs and four Home tabs, labels, icons and Add actions.
+- [ ] Test all nine expense-category choices and confirm their stored category.
+- [ ] Confirm selected month survives closing/reopening and remains shared across sections.
+- [ ] Verify calculator operations and insertion into a numeric form field.
+- [ ] Review both themes and languages, especially long Arabic tab labels, keyboard overlap, touch targets and scrolling.
+- [ ] Verify existing financial data using a protected test copy.
+
+## Production release blockers
+
+- [ ] Production keystore, alias and signing lineage must be verified against the installed production APK; secrets must never be sent in chat or committed.
+- [ ] In-place update testing with the production application ID has not been performed.
+- [ ] Existing financial records, preferences and login continuity have not been proven on-device.
+- [ ] Backup and restore have not been tested.
+- [ ] User approval for merge and production release has not been given.
+
+The current APK is a **debug preview** with application ID suffix `.nativepreview` and a separate sandbox. It installs alongside the production app but cannot update it or read its private database. The PR remains Draft and unmerged.

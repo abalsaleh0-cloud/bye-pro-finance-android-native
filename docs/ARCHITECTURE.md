@@ -18,8 +18,8 @@ The Native version is a separate implementation, not proof that all Flutter feat
 | UI/platform | Kotlin with Android framework Views |
 | Package / release application ID | `com.byepro.bye_pro_finance` |
 | Namespace | `com.byepro.bye_pro_finance` |
-| Current release version name | `1.1.55` |
-| Current release version code | `156` |
+| Current Native version name | `1.1.62` |
+| Current Native version code | `163` |
 | Minimum SDK | 30 |
 | Compile SDK | 36 |
 | Target SDK | 36 |
@@ -38,14 +38,14 @@ A release build has the production application ID. It must not be installed over
 |---|---|
 | `MainActivity.kt` | Single activity, screen navigation, screen composition, dialogs and user actions |
 | `ui/FinanceDesignSystem.kt` | Shared design tokens, palette, typography and primitive view factories |
-| `ui/FinanceComponents.kt` | Reusable app bar, navigation, rows, cards, month selector, empty state and dividers |
+| `ui/FinanceComponents.kt` | Reusable app bar, navigation, independent Native icon tabs, rows, cards, month selector, empty state and dividers |
 | `ui/FinanceAppearance.kt` | System / Light / Dark preference model |
 | `ui/FinancePalette.kt` | Compatibility facade that delegates colors and shapes to the design system |
 | `data/LegacyFinanceDatabase.kt` | Opens and manages the compatible SQLite database |
 | `data/DashboardRepository.kt` | Reads financial records and constructs dashboard summaries |
 | `data/FinanceWriteRepository.kt` | Validates and writes financial operations transactionally |
 | `domain/FinanceModels.kt` | Shared data models exposed to the UI |
-| `domain/HomeCategory.kt` | Exactly three Home categories and their data-source mapping |
+| `domain/HomeCategory.kt` | Exactly four Home categories and their data-source mapping |
 | `app/src/main/res` | Android manifest, string translations, icons, theme and framework resources |
 | `app/src/test` | Unit tests for design tokens, palettes, contrast, appearance, local login and Home category mapping |
 
@@ -116,7 +116,9 @@ For the complete field-by-field schema, relationships, dashboard formulas and va
 | Expenses | `home_expenses` | No bill-kind filter | Groceries, utilities, housing, cleaning, maintenance, transport, personal, health and other |
 | Received from Work (الوارد من العمل) | `work_home_transfers` | Selected month | Actual money transferred from Work into Home |
 
-The Home numbered index and Add menu must use this mapping. "Received from Work" is a read-only view over existing transfer rows; the transfer is created from the Work Add menu. Work and Home retain distinct financial destinations.\n\n### Data-safety rules
+The Home Native icon tabs and Add menu must use this mapping. "Received from Work" is a read-only view over existing transfer rows; the transfer is created from the Work Add menu. Work and Home retain distinct financial destinations.
+
+### Data-safety rules
 
 - Never delete or recreate finance tables as part of a UI redesign.
 - Never clear the database to fix a visual defect.
@@ -158,7 +160,7 @@ The UI appearance contract is defined in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
 The following items are **not to be represented as completed** merely because the Native APK compiles:
 
 - The AI destination currently displays a migration notice; the full assistant is not migrated.
-- The current Native calculator is a basic two-value addition form, not feature parity with the richer calculator in the Flutter implementation.
+- The Native calculator supports arithmetic expressions, parentheses, powers, square roots, percentages, discounts and splitting amounts, plus history, copy and insertion into numeric form fields.
 - A debug preview does not demonstrate production database access because it uses a separate package sandbox.
 - Release signing is only configured to accept the existing key through local `key.properties` or environment variables; this repository does not contain the production key.
 - Full sign-in continuity, backup/restore, device-level migration checks and complete financial-feature parity still require proof.

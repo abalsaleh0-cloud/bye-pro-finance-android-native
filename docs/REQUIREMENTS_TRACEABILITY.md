@@ -1,7 +1,7 @@
 # BYE PRO Finance Native — Requirements Traceability
 
 **Repository:** `abalsaleh0-cloud/bye-pro-finance-android-native`  
-**Development baseline:** `1.1.57 (158)`  
+**Development baseline:** `1.1.62 (163)`  
 **Scope:** Native Android only. The Flutter and web source repositories are outside this change.
 
 This document is the project-level evidence map. A requirement is not considered fully accepted merely because the Kotlin source exists; automated checks and real-device acceptance are listed separately.
@@ -25,7 +25,7 @@ This document is the project-level evidence map. A requirement is not considered
 
 ## 2. Home section — exactly four primary categories
 
-The Home section remains separate from Work. Its numbered-index order is fixed and owned by `domain/HomeCategory.kt`.
+The Home section remains separate from Work. Its tab order is fixed and owned by `domain/HomeCategory.kt`; each destination is a separate Native icon tab, not a numbered index.
 
 | Order | Main category | What it includes | Data source and filter | Add action |
 |---:|---|---|---|---|
@@ -37,7 +37,7 @@ The Home section remains separate from Work. Its numbered-index order is fixed a
 Implementation points:
 
 - Category declaration and source mapping: `domain/HomeCategory.kt`.
-- Numbered index, description and data loading: `FinanceComponents.categoryIndex()` and `MainActivity.renderHome()`.
+- Independent Native icon tabs and data loading: `FinanceComponents.categoryTabs()` and `MainActivity.renderHome()`.
 - The fourth route reads the existing Work transfer repository data; it does not create duplicate Home expense rows.
 - Monthly/rent bill persistence: `FinanceWriteRepository.saveBill()`.
 - Household expense persistence and category selection: `FinanceWriteRepository.saveHomeExpense()` and `MainActivity.showHomeExpenseForm()`.
@@ -47,7 +47,7 @@ Automated coverage:
 
 - `HomeCategoryTest.homeHasExactlyFourCategoriesInTheRequiredOrder`
 - `HomeCategoryTest.eachHomeCategoryUsesItsOwnDataSourceAndFilter`
-- The design-system CI checker confirms four Home routes, five Work routes, the shared icon tabs and bilingual route labels.
+- The design-system CI checker confirms four Home routes, five Work routes, Native icon-tab integration, raster icon mappings and bilingual route labels.
 
 ## 3. Welcome and local login
 
@@ -96,7 +96,7 @@ Settings → Login and Security provides:
 
 ## 4. Version and repository boundaries
 
-- Native version for this development update: `1.1.56 (157)`.
+- Native version for this development update: `1.1.62 (163)`.
 - The debug APK uses the `.nativepreview` application ID suffix and a separate Android sandbox.
 - Production application ID remains `com.byepro.bye_pro_finance`.
 - Do not change the Flutter repository or the web source project.
@@ -113,7 +113,7 @@ These checks cannot be proven by static source inspection alone:
 - [ ] Change the username/password, force-stop/reopen, and verify the new values.
 - [ ] Disable login, force-stop/reopen, and verify the login screen is skipped.
 - [ ] Re-enable login, force-stop/reopen, and verify the saved credentials are required.
-- [ ] Check all three Home categories and each Add action against the correct data source.
+- [ ] Check all four Home categories and each Add action against the correct data source.
 - [ ] Repeat in Light/Dark and Arabic/English without layout mirroring.
 - [ ] Verify the existing finance data has not changed.
 - [ ] Review touch targets, keyboard overlap, swipe recognition and long text on the actual screen size.
@@ -122,8 +122,8 @@ These checks cannot be proven by static source inspection alone:
 
 - Earlier CI run `43929573545` failed during Kotlin Gradle plugin resolution before tests ran. No source/test result was produced by that run.
 - CI run `43933532090` on commit `c33cd65b209b79b5185ff01224074a9eaeb93144` passed: unit tests, Design System guardrails, application identity check, debug APK assembly and artifact upload.
-- The preview artifact is `bye-pro-finance-native-preview` (ID `14259697985`, 1,003,721 bytes, expiry 2026-11-23).
-- Physical-device acceptance remains open; a successful CI run does not prove touchscreen, keyboard, screen-size or real database migration behaviour.
+- The preview artifact is `bye-pro-finance-native-preview` (ID `14278020563`, 1,039,064 bytes, expiry 2026-11-23).
+- Physical-device acceptance remains open; CI does not prove touchscreen, keyboard, screen-size, real database migration, production signing or in-place update behaviour.
 
 
 ## 3. Work section — exactly five routes
@@ -136,7 +136,7 @@ These checks cannot be proven by static source inspection alone:
 | 4 | الباقي | Actual cash left in Work after household transfers, with the unpaid salary amount shown separately | `workRemaining = cashReceived - transfersTotal`; secondary `currentSalaryOutstanding = max(salary - payments - advances, 0)` | None — calculated view |
 | 5 | تحويلات المنزل | Work-to-Home transfer history | `work_home_transfers` | Transfer to Home |
 
-Work Add always exposes four actions in the requested order: salary, payment, advance, Home transfer. Both Work and Home use the same separate Native icon tabs component; neither section uses the old segmented pill selector.
+Work Add always exposes four actions in the requested order: salary, payment, advance, Home transfer. Both Work and Home use the same Native icon-tab component as separate tab sets; no numbered index or Flutter tab UI is used.
 
 
 ## Native tabs, icons and shared month tools

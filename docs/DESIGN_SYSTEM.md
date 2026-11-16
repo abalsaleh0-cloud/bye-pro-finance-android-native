@@ -129,7 +129,11 @@ All dimensions are dp unless the token name ends in `_SP` or explicitly says oth
 | `DIALOG_RADIUS` | 20 | Dialog background corners |
 | `BUTTON_HEIGHT` | 48 | Standard action-button and input height |
 | `TOUCH_TARGET_SIZE` | 44 | Minimum touch target |
-| `SECTION_TAB_HEIGHT` | 48 | Standard section-tab control height |
+| `SECTION_TAB_WIDTH` | 76 | Width of each independent icon tab |
+| `SECTION_TAB_HEIGHT` | 64 | Height of each independent icon tab |
+| `SECTION_TAB_ICON_SIZE` | 22 | Icon size inside an independent tab |
+| `SECTION_TAB_RADIUS` | 12 | Tab surface radius |
+| `SECTION_TAB_GAP` | 4 | Gap between tab icon and label |
 | `SECTION_HEADER_HEIGHT` | 36 | Section heading row |
 | `METRIC_TILE_MIN_HEIGHT` | 64 | Minimum financial metric row |
 | `RECORD_ROW_HEIGHT` | 64 | Minimum transaction row |
@@ -242,7 +246,7 @@ A section may arrange approved components differently to suit its data, but may 
 - Do not change financial values or persistence logic as part of a visual styling change.
 - Keep labels readable, avoid truncation of amounts, and allow long transaction titles to wrap where appropriate.
 - Test both Light and Dark modes and both languages at phone-sized widths.
-- Check the Welcome swipe and Continue button, Login error state, masked password field, and the exact three Home categories.
+- Check the Welcome swipe and Continue button, Login error state, masked password field, and all four Home categories.
 - Confirm each Home category's Add action writes to its correct data source.
 
 ## 9. Prohibited patterns
@@ -281,6 +285,6 @@ Before any UI change is considered complete:
 - Work routes are Salary, Payment, Advance, Remaining and Home Transfers. Home routes are Monthly Bills, Monthly Rent, Expenses and Received from Work.
 - Every route has its own icon. Bill and rent use different icons. Each of the nine expense categories has its own icon.
 - Material icon semantics were selected from the Flutter source, but the Native app ships raster PNG resources only. Gradle extracts the compact icon sheet into generated drawable-nodpi PNG resources. No VectorDrawable icon resources remain.
-- The selected-month row appears on Dashboard, Work, Home, Debts and AI. It offers stored/available month selection and the Android calendar picker, constrained to 1900–2100. Month keys and displayed values use ASCII digits in YYYY-MM format.
+- The selected-month row appears on Dashboard, Work, Home, Debts and AI. It offers stored/available month selection and the Android calendar picker, constrained to 1900–2100. The selected month persists under `app_settings.selected_month`, matching the Flutter source. Month keys and displayed values use ASCII digits in YYYY-MM format.
 - Every data-entry field has a persistent localized label. Numeric fields use only ASCII digits (0123456789) and stay left-to-right in both languages.
 - Numeric fields expose the shared calculator. It supports scientific expressions, percentages, discounts, splitting, calculation history, copy and result insertion.

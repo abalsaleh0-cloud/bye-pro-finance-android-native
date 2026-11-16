@@ -134,6 +134,7 @@ Current Native preference and login keys include:
 |---|---|
 | `locale` | Arabic (`ar`, default) or English (`en`) text resources |
 | `theme_mode` | `system`, `light` or `dark` |
+| `selected_month` | Shared month key in `YYYY-MM` format, persisted across app launches and used by Dashboard, Work, Home, Debts and AI |
 | `local_auth_username` | Current local username |
 | `local_auth_salt` | Base64-encoded random password salt |
 | `local_auth_password_hash` | Base64-encoded PBKDF2-HMAC-SHA256 verifier; never the readable password |

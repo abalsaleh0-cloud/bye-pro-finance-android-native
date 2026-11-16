@@ -1,12 +1,19 @@
 # Changelog — BYE PRO Finance Native
 
-## 1.1.57 (158) — Home/Work navigation and entry redesign
+## 1.1.62 (163) — Native navigation, icons and verification
 
-- Added a fourth Home route: **الوارد من العمل**, showing the monthly total and actual transfer history from Work into Home.
-- Renamed Rent to **الإيجارات الشهرية / Monthly Rent** without changing the stored `rent` kind.
-- Home and Work now share one numbered editorial category index; the old segmented tabs have been removed.
-- Work has five routes: Salary, Payment, Advance, Remaining and Home Transfers. Remaining shows cash still held in Work, with unpaid salary balance as a secondary value.
-- Work Add offers four operations only: Add Salary, Add Payment, Add Advance and Transfer to Home. Remaining is calculated, not entered.
-- Home Add always offers Add Monthly Bill, Add Monthly Rent and Add Expense, regardless of the current route.
-- Welcome and Login are rebuilt as distinct non-card compositions with original finance-orbit artwork and open underlined login fields.
-- Authentication rules, financial values, table relationships and existing records are preserved. This is a development preview, not a production release.
+- Replaced the rejected numbered category index with independent Native icon tabs: five for Work and four for Home.
+- Added dedicated icons for every route, bills, rent and all nine household-expense categories.
+- Added a PNG sprite-sheet resource pipeline; icons are raster PNG resources and VectorDrawable icon artwork is not used.
+- Persisted the shared selected month with the `selected_month` key used by the Flutter source.
+- Numeric entry is restricted to ASCII digits and remains LTR in Arabic and English.
+- Ported calculator expression, percentage, discount and split-amount behaviour to the Native calculator.
+- CI run `43966393925` passed all 28 unit tests, the Design System checker, application ID check, debug APK assembly and artifact upload.
+- Preview artifact: `bye-pro-finance-native-preview`, ID `14278020563`; expires 2026-11-23.
+- This is a debug preview with the `.nativepreview` suffix, not a production release. Real-device acceptance and production signing continuity remain open.
+
+## 1.1.57 (158) — Historical navigation and entry redesign
+
+- Introduced the fifth Work route, fourth Home route and Welcome/Login entry screens.
+- The first iteration used a shared numbered index; this was later rejected and replaced by separate Native icon tabs in 1.1.62.
+- Existing finance tables, records and local-authentication profile are preserved by the source changes.

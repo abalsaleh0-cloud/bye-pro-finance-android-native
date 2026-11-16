@@ -35,8 +35,8 @@ On pushes to `main` and pull requests, CI:
 2. Sets up Java 17.
 3. Installs Android SDK platform 36 and build tools 36.0.0.
 4. Sets up Gradle 9.5.0.
-5. Runs `:app:testDebugUnitTest`, including local-login, four-route Home mapping and five-route Work mapping tests.
-6. Runs `python3 scripts/check_design_system.py` to compare Kotlin palette values with Android XML resources, verify core dimensions, reject screen-local styling, verify four Home routes and five Work routes, check shared category-index use, and confirm both sections' Add menus expose every approved action.
+5. Runs `:app:testDebugUnitTest`, including local-login, four-route Home mapping, five-route Work mapping and calculator tests.
+6. Runs `python3 scripts/check_design_system.py` to compare Kotlin palette values with Android XML resources, verify core dimensions, reject screen-local styling, verify four Home routes and five Work routes, reject the old numbered category index, confirm Native icon-tab integration and raster icon mappings, and confirm both sections' Add menus expose every approved action.
 7. Confirms the Native release application ID is `com.byepro.bye_pro_finance`.
 8. Assembles the Native debug APK.
 9. Uploads `bye-pro-finance-native-preview` for seven days.
@@ -76,7 +76,7 @@ A passing CI run demonstrates that the configured tests pass and the debug APK a
 
 ## 7. Versioning and release gate
 
-Current Native release configuration: `1.1.57 (158)`. Every accepted app update increments the version code; the Native preview package remains isolated with `.nativepreview`.
+Current Native configuration: `1.1.62 (163)`, with version code `163`. Every accepted app update increments the version code; the Native preview package remains isolated with `.nativepreview`.
 
 Every accepted app update must increment the version code; version name should also be updated according to the release sequence. Debug preview builds remain separate and are not production releases.
 
