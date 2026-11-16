@@ -69,7 +69,6 @@ object FinanceDesignTokens {
     const val NAVIGATION_ICON_SLOT_HEIGHT = 30
     const val NAVIGATION_LABEL_HEIGHT = 20
     const val NAVIGATION_CONTENT_HEIGHT = NAVIGATION_BAR_HEIGHT - 8
-    const val SECTION_TAB_HEIGHT = 48
     const val SECTION_HEADER_HEIGHT = 36
     const val METRIC_TILE_MIN_HEIGHT = 64
     const val RECORD_ICON_BOX_SIZE = 40

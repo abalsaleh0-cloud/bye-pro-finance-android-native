@@ -15,6 +15,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.byepro.bye_pro_finance.R
 
 data class FinanceCategoryTabItem(val title:String,val iconResource:Int,val selected:Boolean,val onClick:()->Unit)
 data class FinanceIconOptionItem(val title:String,val iconResource:Int,val selected:Boolean=false,val onClick:()->Unit)
@@ -182,7 +183,7 @@ object FinanceComponents {
             items.forEachIndexed { index,item ->
                 val row=LinearLayout(context).apply {
                     orientation=LinearLayout.HORIZONTAL; layoutDirection=View.LAYOUT_DIRECTION_RTL; gravity=Gravity.CENTER_VERTICAL
-                    minHeight=FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE)
+                    minimumHeight=FinanceDesignSystem.dp(context,FinanceDesignTokens.TOUCH_TARGET_SIZE)
                     background=if(item.selected) FinanceDesignSystem.rounded(context,palette.accentSoft,FinanceDesignTokens.CONTROL_RADIUS) else ColorDrawable(Color.TRANSPARENT)
                     isClickable=true; isFocusable=true; foreground=FinanceDesignSystem.ripple(context,isDark); contentDescription=item.title
                     setOnClickListener { item.onClick() }
