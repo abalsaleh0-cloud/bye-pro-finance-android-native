@@ -66,8 +66,8 @@ android {
         applicationId = "com.byepro.bye_pro_finance"
         minSdk = 30
         targetSdk = 36
-        versionCode = 157
-        versionName = "1.1.56"
+        versionCode = 158
+        versionName = "1.1.57"
         testInstrumentationRunner = "android.test.InstrumentationTestRunner"
     }
 
