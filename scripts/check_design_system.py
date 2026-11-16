@@ -125,7 +125,7 @@ for token, resource in dimension_map.items():
 screen_rules = {
     "raw dp literal": r"\bdp\s*\(\s*\d+",
     "direct text size": r"\btextSize\s*=",
-    "literal text-size value": r"\b(?:11|12|13|14|15|16|20)f\b",
+    "literal text-size value": r"(?<![\d.])(?:11|12|13|14|15|16|20)f\b",
     "literal text color": r"setTextColor\s*\(\s*0x",
     "literal background color": r"setBackgroundColor\s*\(\s*0x",
     "ad-hoc parsed color": r"Color\.parseColor",
@@ -136,7 +136,7 @@ for label, pattern in screen_rules.items():
 
 component_rules = {
     "raw dp literal": r"\bdp\s*\(\s*context\s*,\s*\d+",
-    "literal text-size value": r"\b(?:11|12|13|14|15|16|20)f\b",
+    "literal text-size value": r"(?<![\d.])(?:11|12|13|14|15|16|20)f\b",
 }
 for label, pattern in component_rules.items():
     if re.search(pattern, components):
