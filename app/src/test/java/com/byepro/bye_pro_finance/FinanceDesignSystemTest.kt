@@ -47,6 +47,8 @@ class FinanceDesignSystemTest {
         assertEquals(56, FinanceDesignTokens.LIST_DIVIDER_START_INSET)
         assertEquals(24, FinanceDesignTokens.EMPTY_STATE_VERTICAL_PADDING)
         assertEquals(80, FinanceDesignTokens.MULTILINE_INPUT_HEIGHT)
+        assertEquals(64, FinanceDesignTokens.WELCOME_ICON_SIZE)
+        assertEquals(72, FinanceDesignTokens.SWIPE_THRESHOLD)
         assertEquals(160L, FinanceDesignTokens.MOTION_DURATION_MS)
     }
 
