@@ -288,7 +288,7 @@ class MainActivity : Activity() {
     private fun renderDashboard() {
         val summary = repository.loadDashboard(selectedMonth)
         addMonthSelector(summary)
-        addGap(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING)
+        addGap(FinanceDesignTokens.SPACE_16)
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.financial_snapshot))
         addMetricGroup(
             MetricDisplay(s(com.byepro.bye_pro_finance.R.string.home_available_balance), summary.homeAvailableBalance, R.drawable.ic_payments, true),
