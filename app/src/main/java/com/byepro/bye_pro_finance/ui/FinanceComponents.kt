@@ -175,7 +175,7 @@ object FinanceComponents {
                     shape=GradientDrawable.RECTANGLE
                     cornerRadius=FinanceDesignSystem.dp(context,FinanceDesignTokens.SECTION_TAB_RADIUS).toFloat()
                     setColor(if(item.selected) palette.accent else palette.raised)
-                    setStroke(FinanceDesignSystem.dp(context,1),if(item.selected) palette.accent else palette.divider)
+                    setStroke(FinanceDesignSystem.dp(context,FinanceDesignTokens.DIVIDER_HEIGHT),if(item.selected) palette.accent else palette.divider)
                 }
                 isClickable=true
                 isFocusable=true
