@@ -15,7 +15,7 @@
         <item name="android:fontFamily">sans</item>
         <item name="android:windowBackground">@drawable/finance_dialog_background_light</item>
         <item name="android:colorAccent">@color/finance_light_accent</item>
-        <item name="android:textColorPrimary">@color/finance_dark_background</item>
+        <item name="android:textColorPrimary">@color/finance_light_text</item>
         <item name="android:textColorSecondary">@color/finance_light_secondary_text</item>
         <item name="android:windowMinWidthMajor">87%</item>
         <item name="android:windowMinWidthMinor">87%</item>
