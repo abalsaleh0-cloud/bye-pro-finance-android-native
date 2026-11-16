@@ -71,8 +71,8 @@ object FinanceDesignTokens {
     const val NAVIGATION_CONTENT_HEIGHT = NAVIGATION_BAR_HEIGHT - 8
     const val SECTION_HEADER_HEIGHT = 36
     const val METRIC_TILE_MIN_HEIGHT = 64
-    const val RECORD_ICON_BOX_SIZE = 40
-    const val STANDARD_ICON_SIZE = 20
+    const val RECORD_ICON_BOX_SIZE = 48
+    const val STANDARD_ICON_SIZE = 26
     const val DIVIDER_HEIGHT = 1
     const val LIST_DIVIDER_START_INSET = 56
     const val RECORD_ROW_HEIGHT = 64
@@ -81,12 +81,12 @@ object FinanceDesignTokens {
     const val WELCOME_ICON_SIZE = 64
     const val SWIPE_THRESHOLD = 72
 
-    // Independent icon-bearing Native Home and Work tabs.
-    const val SECTION_TAB_WIDTH = 76
-    const val SECTION_TAB_HEIGHT = 64
-    const val SECTION_TAB_ICON_SIZE = 22
+    // Flutter-style horizontally scrolling pill tabs.
+    const val SECTION_TAB_MIN_WIDTH = 88
+    const val SECTION_TAB_HEIGHT = 44
+    const val SECTION_TAB_HORIZONTAL_PADDING = 16
     const val SECTION_TAB_RADIUS = 12
-    const val SECTION_TAB_GAP = SPACE_4
+    const val SECTION_TAB_GAP = 8
     const val TEXT_ENTRY_TITLE_SP = 30f
     const val TEXT_ENTRY_KICKER_SP = 12f
     const val TEXT_BALANCE_SP = 28f
@@ -236,11 +236,10 @@ object FinanceDesignSystem {
     ): FrameLayout {
         val palette = colors(isDark)
         return FrameLayout(context).apply {
-            background = rounded(
-                context,
-                if (selected) palette.accentSoft else palette.raised,
-                FinanceDesignTokens.CONTROL_RADIUS
-            )
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.OVAL
+                setColor(if (selected) palette.accentSoft else palette.raised)
+            }
             val image = ImageView(context).apply {
                 setImageResource(iconResource)
                 imageTintList = ColorStateList.valueOf(
@@ -266,11 +265,10 @@ object FinanceDesignSystem {
         contentDescription = description
         isClickable = true
         isFocusable = true
-        background = rounded(
-            context,
-            colors(isDark).background,
-            FinanceDesignTokens.CONTROL_RADIUS
-        )
+        background = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(colors(isDark).background)
+        }
         val image = ImageView(context).apply {
             setImageResource(iconResource)
             imageTintList = ColorStateList.valueOf(colors(isDark).text)
