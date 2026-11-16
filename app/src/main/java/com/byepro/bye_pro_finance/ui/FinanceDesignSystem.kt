@@ -82,13 +82,12 @@ object FinanceDesignTokens {
     const val WELCOME_ICON_SIZE = 64
     const val SWIPE_THRESHOLD = 72
 
-    // Editorial Home/Work navigation and original entry surfaces.
-    const val HOME_CATEGORY_ROW_HEIGHT = 72
-    const val HOME_CATEGORY_RAIL_WIDTH = 3
-    const val HOME_CATEGORY_RAIL_HEIGHT = 40
-    const val HOME_CATEGORY_INDEX_WIDTH = 48
-    const val HOME_CATEGORY_ACTIVE_RADIUS = 8
-    const val TEXT_INDEX_SP = 22f
+    // Independent icon-bearing Native Home and Work tabs.
+    const val SECTION_TAB_WIDTH = 76
+    const val SECTION_TAB_HEIGHT = 64
+    const val SECTION_TAB_ICON_SIZE = 22
+    const val SECTION_TAB_RADIUS = 12
+    const val SECTION_TAB_GAP = SPACE_4
     const val TEXT_ENTRY_TITLE_SP = 30f
     const val TEXT_ENTRY_KICKER_SP = 12f
     const val TEXT_BALANCE_SP = 28f
