@@ -28,6 +28,8 @@ import com.byepro.bye_pro_finance.data.LocalAuthentication
 import com.byepro.bye_pro_finance.domain.ActivityItem
 import com.byepro.bye_pro_finance.domain.DashboardSummary
 import com.byepro.bye_pro_finance.domain.FinanceRecord
+import com.byepro.bye_pro_finance.domain.HomeCategory
+import com.byepro.bye_pro_finance.domain.HomeRecordSource
 import com.byepro.bye_pro_finance.ui.FinanceAppearance
 import com.byepro.bye_pro_finance.ui.FinanceAppearanceMode
 import com.byepro.bye_pro_finance.ui.FinanceCategoryTab
@@ -51,10 +53,6 @@ class MainActivity : Activity() {
 
     private enum class Section {
         DASHBOARD, WORK, HOME, DEBTS, AI
-    }
-
-    private enum class HomeCategory {
-        MONTHLY_BILLS, RENT, EXPENSES
     }
 
     private lateinit var database: LegacyFinanceDatabase
@@ -793,10 +791,12 @@ class MainActivity : Activity() {
         )
         addGap(FinanceDesignTokens.SECTION_SPACING)
 
-        val records = when (selectedHomeCategory) {
-            HomeCategory.MONTHLY_BILLS -> repository.loadBills(selectedMonth, "monthly")
-            HomeCategory.RENT -> repository.loadBills(selectedMonth, "rent")
-            HomeCategory.EXPENSES -> repository.loadHomeExpenses(selectedMonth)
+        val records = when (selectedHomeCategory.source) {
+            HomeRecordSource.BILLS -> repository.loadBills(
+                selectedMonth,
+                requireNotNull(selectedHomeCategory.billKind)
+            )
+            HomeRecordSource.HOME_EXPENSES -> repository.loadHomeExpenses(selectedMonth)
         }.sortedByDescending {
             if (it.kind == "bill") Long.MAX_VALUE else it.timestamp
         }
