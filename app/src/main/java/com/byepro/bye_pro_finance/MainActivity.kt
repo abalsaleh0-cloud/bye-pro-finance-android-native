@@ -288,7 +288,7 @@ class MainActivity : Activity() {
     private fun renderDashboard() {
         val summary = repository.loadDashboard(selectedMonth)
         addMonthSelector(summary)
-        addGap(16)
+        addGap(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING)
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.financial_snapshot))
         addMetricGroup(
             MetricDisplay(s(com.byepro.bye_pro_finance.R.string.home_available_balance), summary.homeAvailableBalance, R.drawable.ic_payments, true),
@@ -326,58 +326,25 @@ class MainActivity : Activity() {
 
         addSectionHeading(s(com.byepro.bye_pro_finance.R.string.recent_activity))
         addActivityGroup(summary.recentActivity)
-        addGap(8)
+        addGap(FinanceDesignTokens.SPACE_8)
     }
 
     private fun addMonthSelector(summary: DashboardSummary) {
-        // The month caption is a title, not a card. Only the date is interactive.
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp(2), 0, dp(2))
-        }
-
-        val label = FinanceDesignSystem.text(
-            this,
-            s(R.string.month_shown),
-            13f,
-            FinancePalette.muted(darkTheme),
-            bold = true
+        pageContent.addView(
+            FinanceComponents.monthSelector(
+                context = this,
+                isDark = darkTheme,
+                caption = s(R.string.month_shown),
+                selectedMonth = selectedMonth.toString(),
+                contentDescription = s(R.string.month_shown) + ": " + selectedMonth
+            ) {
+                showMonthPicker(pageContent, summary.availableMonths)
+            },
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         )
-        row.addView(label, LinearLayout.LayoutParams(
-            0,
-            dp(FinanceDesignTokens.BUTTON_HEIGHT),
-            1f
-        ))
-
-        val month = FinanceDesignSystem.text(
-            this,
-            selectedMonth.toString() + "  ▾",
-            14f,
-            FinancePalette.accent(darkTheme),
-            bold = true
-        ).apply {
-            gravity = Gravity.CENTER
-            setPadding(dp(8), 0, dp(8), 0)
-            minHeight = dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)
-            isClickable = true
-            isFocusable = true
-            contentDescription = s(R.string.month_shown) + ": " + selectedMonth
-            setOnClickListener {
-                showMonthPicker(this, summary.availableMonths)
-            }
-        }
-
-        row.addView(month, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            dp(FinanceDesignTokens.TOUCH_TARGET_SIZE)
-        ))
-
-        pageContent.addView(row, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ))
     }
 
     private data class MetricDisplay(
@@ -461,26 +428,26 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER_VERTICAL
             layoutDirection = View.LAYOUT_DIRECTION_RTL
         }
-        head.addView(makeText(label, 13f, false), LinearLayout.LayoutParams(0, dp(24), 1f))
-        head.addView(makeText(formatAmount(value), 14f, true), LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT, dp(24)
+        head.addView(makeText(label, FinanceDesignTokens.TEXT_LABEL_SP, false), LinearLayout.LayoutParams(0, dp(FinanceDesignTokens.CHART_LABEL_ROW_HEIGHT), 1f))
+        head.addView(makeText(formatAmount(value), FinanceDesignTokens.TEXT_BODY_SP, true), LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT, dp(FinanceDesignTokens.CHART_LABEL_ROW_HEIGHT)
         ))
         parent.addView(head)
         val track = View(this).apply {
-            setRoundedBackground(FinancePalette.raised(darkTheme), 5f)
+            setRoundedBackground(FinancePalette.raised(darkTheme), FinanceDesignTokens.CHART_BAR_RADIUS_DP)
         }
         parent.addView(track, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(7)
-        ).apply { topMargin = dp(5) })
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.CHART_BAR_HEIGHT)
+        ).apply { topMargin = dp(FinanceDesignTokens.CHART_BAR_TOP_GAP) })
         val fill = View(this).apply {
-            setRoundedBackground(FinancePalette.accent(darkTheme), 5f)
+            setRoundedBackground(FinancePalette.accent(darkTheme), FinanceDesignTokens.CHART_BAR_RADIUS_DP)
         }
         // Keep the indicator RTL and proportional without creating a second
         // transaction or changing any stored monetary value.
-        val measuredWidth = (resources.displayMetrics.widthPixels - dp(72)).coerceAtLeast(1)
-        val width = (measuredWidth * ratio).toInt().coerceAtLeast(if (value == 0L) 0 else dp(3))
-        parent.addView(fill, LinearLayout.LayoutParams(width, dp(7)).apply {
-            topMargin = -dp(7)
+        val measuredWidth = (resources.displayMetrics.widthPixels - dp(FinanceDesignTokens.CHART_HORIZONTAL_INSET)).coerceAtLeast(1)
+        val width = (measuredWidth * ratio).toInt().coerceAtLeast(if (value == 0L) 0 else dp(FinanceDesignTokens.CHART_MIN_VISIBLE_FILL))
+        parent.addView(fill, LinearLayout.LayoutParams(width, dp(FinanceDesignTokens.CHART_BAR_HEIGHT)).apply {
+            topMargin = -dp(FinanceDesignTokens.CHART_BAR_HEIGHT)
             gravity = Gravity.END
         })
     }
@@ -556,10 +523,10 @@ class MainActivity : Activity() {
             R.drawable.ic_ai,
             selected = true
         )
-        panel.addView(icon, LinearLayout.LayoutParams(dp(40), dp(40)))
+        panel.addView(icon, LinearLayout.LayoutParams(dp(FinanceDesignTokens.RECORD_ICON_BOX_SIZE), dp(FinanceDesignTokens.RECORD_ICON_BOX_SIZE)))
         panel.addView(makeText(
             s(R.string.ai_migration_notice),
-            14f,
+            FinanceDesignTokens.TEXT_BODY_SP,
             false
         ).apply {
             setPadding(0, dp(FinanceDesignTokens.SECTION_SPACING), 0, 0)
@@ -573,7 +540,7 @@ class MainActivity : Activity() {
     private fun addMonthQuickPicker() {
         val summary = repository.loadDashboard(selectedMonth)
         addMonthSelector(summary)
-        addGap(12)
+        addGap(FinanceDesignTokens.SECTION_SPACING)
     }
 
     private fun addRecordGroup(records: List<FinanceRecord>) {
@@ -605,16 +572,13 @@ class MainActivity : Activity() {
     }
 
     private fun addEmptyState(message: String) {
-        val text = FinanceDesignSystem.text(
-            this, message, 14f, FinancePalette.muted(darkTheme)
-        ).apply {
-            gravity = Gravity.CENTER
-            setPadding(dp(12), dp(24), dp(12), dp(24))
-        }
-        pageContent.addView(text, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ))
+        pageContent.addView(
+            FinanceComponents.emptyState(this, darkTheme, message),
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
     }
 
     private fun showCreateMenu(anchor: View) {
@@ -690,7 +654,7 @@ class MainActivity : Activity() {
         )
         form.addView(field, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            if (multiline) dp(80) else dp(FinanceDesignTokens.BUTTON_HEIGHT)
+            if (multiline) dp(FinanceDesignTokens.MULTILINE_INPUT_HEIGHT) else dp(FinanceDesignTokens.BUTTON_HEIGHT)
         ).apply {
             bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING / 2)
         })
@@ -709,9 +673,9 @@ class MainActivity : Activity() {
     ): DateField {
         var selectedMillis = initialEpochMillis
         val view = FinanceDesignSystem.text(
-            this, "", 14f, FinancePalette.accent(darkTheme), bold = true
+            this, "", FinanceDesignTokens.TEXT_BODY_SP, FinancePalette.accent(darkTheme), bold = true
         ).apply {
-            setPadding(dp(14), 0, dp(14), 0)
+            setPadding(dp(FinanceDesignTokens.INPUT_HORIZONTAL_PADDING), 0, dp(FinanceDesignTokens.INPUT_HORIZONTAL_PADDING), 0)
             background = FinanceDesignSystem.rounded(
                 this@MainActivity,
                 FinancePalette.raised(darkTheme),
@@ -1031,7 +995,7 @@ class MainActivity : Activity() {
         form.addView(makeText(
             s(com.byepro.bye_pro_finance.R.string.remaining_amount) + ": " +
                 formatAmount(debt.amountMinorUnits),
-            14f,
+            FinanceDesignTokens.TEXT_BODY_SP,
             true
         ))
         val amount = formInput(
@@ -1075,7 +1039,7 @@ class MainActivity : Activity() {
         form.addView(makeText(
             s(com.byepro.bye_pro_finance.R.string.remaining_amount) + ": " +
                 formatAmount(bill.amountMinorUnits),
-            14f,
+            FinanceDesignTokens.TEXT_BODY_SP,
             true
         ))
         val amount = formInput(
@@ -1505,6 +1469,5 @@ class MainActivity : Activity() {
     private fun formatDate(epochMillis: Long): String =
         SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(epochMillis))
 
-    private fun dp(value: Int): Int =
-        (value * resources.displayMetrics.density).toInt()
+    private fun dp(value: Int): Int = FinanceDesignSystem.dp(this, value)
 }
