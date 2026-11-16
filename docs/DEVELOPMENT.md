@@ -35,8 +35,8 @@ On pushes to `main` and pull requests, CI:
 2. Sets up Java 17.
 3. Installs Android SDK platform 36 and build tools 36.0.0.
 4. Sets up Gradle 9.5.0.
-5. Runs `:app:testDebugUnitTest`, including local-login and the three-category Home data-mapping tests.
-6. Runs `python3 scripts/check_design_system.py` to compare Kotlin palette values with Android XML resources, verify core dimensions, and reject screen-local styling.
+5. Runs `:app:testDebugUnitTest`, including local-login, four-route Home mapping and five-route Work mapping tests.
+6. Runs `python3 scripts/check_design_system.py` to compare Kotlin palette values with Android XML resources, verify core dimensions, reject screen-local styling, verify four Home routes and five Work routes, check shared category-index use, and confirm both sections' Add menus expose every approved action.
 7. Confirms the Native release application ID is `com.byepro.bye_pro_finance`.
 8. Assembles the Native debug APK.
 9. Uploads `bye-pro-finance-native-preview` for seven days.
@@ -51,7 +51,7 @@ A passing CI run demonstrates that the configured tests pass and the debug APK a
 4. Add or update automated tests for the changed behaviour.
 5. Update the relevant documentation and `IMPLEMENTATION_STATUS.md`.
 6. Run the local commands above or rely on the corresponding completed CI checks.
-7. Review both Light and Dark modes, Arabic and English, and the five navigation destinations on an Android device for UI changes.
+7. Review both Light and Dark modes, Arabic and English, the four Home routes, five Work routes, Add menus and both entry screens on an Android device for UI changes.
 8. Never merge or release a change that has not been explicitly approved for that purpose.
 
 ## 5. UI contribution checklist
@@ -76,7 +76,7 @@ A passing CI run demonstrates that the configured tests pass and the debug APK a
 
 ## 7. Versioning and release gate
 
-Current Native release configuration: `1.1.56 (157)`. Every accepted app update increments the version code; the Native preview package remains isolated with `.nativepreview`.
+Current Native release configuration: `1.1.57 (158)`. Every accepted app update increments the version code; the Native preview package remains isolated with `.nativepreview`.
 
 Every accepted app update must increment the version code; version name should also be updated according to the release sequence. Debug preview builds remain separate and are not production releases.
 
