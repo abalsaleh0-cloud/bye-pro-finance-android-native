@@ -23,29 +23,31 @@ This document is the project-level evidence map. A requirement is not considered
 - A token/component change must include a unit test, a documentation update and a passing CI check.
 - Screen geometry, component order, dimensions and navigation order must remain consistent between Light/Dark and Arabic/English.
 
-## 2. Home section — exactly three primary categories
+## 2. Home section — exactly four primary categories
 
-The Home section remains separate from Work. Its tab order is fixed and owned by `domain/HomeCategory.kt`.
+The Home section remains separate from Work. Its numbered-index order is fixed and owned by `domain/HomeCategory.kt`.
 
 | Order | Main category | What it includes | Data source and filter | Add action |
 |---:|---|---|---|---|
 | 1 | **الفواتير الشهرية** | Electricity, water, gas, internet, phone, monthly services and subscriptions | `home_bills` where `kind = monthly` | Add Monthly Bill |
-| 2 | **الإيجار** | Housing rent, amount due, paid installments and payment history | `home_bills` where `kind = rent` | Add Rent |
+| 2 | **الإيجارات الشهرية** | Housing rent, amount due, paid installments and payment history | `home_bills` where `kind = rent` | Add Monthly Rent |
 | 3 | **المصروفات** | Groceries, utilities, housing, cleaning, maintenance, transport, personal purchases, health and other household expenses | `home_expenses` | Add Expense |
+| 4 | **الوارد من العمل** | Money actually received into Home through Work transfers | `work_home_transfers`, filtered by selected month | Created in Work → Transfer to Home |
 
 Implementation points:
 
 - Category declaration and source mapping: `domain/HomeCategory.kt`.
-- Tab selection, description and data loading: `MainActivity.renderHome()`.
+- Numbered index, description and data loading: `FinanceComponents.categoryIndex()` and `MainActivity.renderHome()`.
+- The fourth route reads the existing Work transfer repository data; it does not create duplicate Home expense rows.
 - Monthly/rent bill persistence: `FinanceWriteRepository.saveBill()`.
 - Household expense persistence and category selection: `FinanceWriteRepository.saveHomeExpense()` and `MainActivity.showHomeExpenseForm()`.
 - Arabic/English labels and descriptions: `res/values/strings.xml` and `res/values-en/strings.xml`.
 
 Automated coverage:
 
-- `HomeCategoryTest.homeHasExactlyThreeCategoriesInTheRequiredOrder`
+- `HomeCategoryTest.homeHasExactlyFourCategoriesInTheRequiredOrder`
 - `HomeCategoryTest.eachHomeCategoryUsesItsOwnDataSourceAndFilter`
-- The design-system CI checker confirms the category contract, shared tabs and both language resources are present.
+- The design-system CI checker confirms four Home routes, five Work routes, the shared numbered index and bilingual route labels.
 
 ## 3. Welcome and local login
 
@@ -122,3 +124,16 @@ These checks cannot be proven by static source inspection alone:
 - CI run `43933532090` on commit `c33cd65b209b79b5185ff01224074a9eaeb93144` passed: unit tests, Design System guardrails, application identity check, debug APK assembly and artifact upload.
 - The preview artifact is `bye-pro-finance-native-preview` (ID `14259697985`, 1,003,721 bytes, expiry 2026-11-23).
 - Physical-device acceptance remains open; a successful CI run does not prove touchscreen, keyboard, screen-size or real database migration behaviour.
+
+
+## 3. Work section — exactly five routes
+
+| Order | Route | What it displays | Data source | Add action |
+|---:|---|---|---|---|
+| 1 | الراتب | Salary records | `work_entries.kind = salary` | Add Salary |
+| 2 | الدفعة | Work payments | `work_entries.kind = payment` plus legacy `salaryPayment` | Add Payment |
+| 3 | السلفة | Advances | `work_entries.kind = advance` | Add Advance |
+| 4 | الباقي | Calculated remaining salary after payments and advances | `currentSalaryOutstanding` from existing monthly summary formula | None — calculated view |
+| 5 | تحويلات المنزل | Work-to-Home transfer history | `work_home_transfers` | Transfer to Home |
+
+Work Add always exposes four actions in the requested order: salary, payment, advance, Home transfer. Both Work and Home use the same numbered editorial index component; neither section uses the old segmented pill selector.
