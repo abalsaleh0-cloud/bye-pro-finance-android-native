@@ -184,13 +184,12 @@ for marker in work_category_markers:
 if len(re.findall(r"^    (?:SALARY|PAYMENT|ADVANCE|REMAINING|HOME_TRANSFERS)\(", work_domain, flags=re.MULTILINE)) != 5:
     errors.append("Work must contain exactly five primary routes.")
 
-# Screens consume the shared category index and original entry components.
+# Screens consume independent Native tabs and original entry components.
 for marker in (
-    "HomeCategory.ordered.mapIndexed",
-    "WorkCategory.ordered.mapIndexed",
-    "FinanceComponents.categoryIndex(",
+    "HomeCategory.ordered.map {",
+    "WorkCategory.ordered.map {",
+    "FinanceComponents.categoryTabs(",
     "FinanceComponents.balanceStatement(",
-    "FinanceComponents.categoryDescription(",
     "FinanceComponents.brandSignature(",
     "FinanceComponents.entryArtwork(",
     "FinanceComponents.editorialInput(",
@@ -200,8 +199,28 @@ for marker in (
 ):
     if marker not in screen:
         errors.append(f"MainActivity is missing required shared UI integration: {marker}")
-if "FinanceComponents.categoryTabs(" in screen or "FinanceComponents.categoryTabs(" in components:
-    errors.append("Traditional segmented category tabs are prohibited; use categoryIndex().")
+if "FinanceComponents.categoryTabs(" not in screen:
+    errors.append("Home and Work must use independent Native icon-bearing tabs.")
+if "FinanceCategoryIndexItem" in screen or "FinanceCategoryIndexItem" in components or "categoryIndex(" in screen or "categoryIndex(" in components:
+    errors.append("The rejected numbered category index must not be present.")
+
+required_raster_icons = (
+    "ic_work_salary", "ic_work_payment", "ic_work_advance", "ic_work_remaining",
+    "ic_work_transfers", "ic_home_bills", "ic_home_rent", "ic_home_expenses",
+    "ic_home_received", "ic_expense_groceries", "ic_expense_utilities",
+    "ic_expense_housing", "ic_expense_cleaning", "ic_expense_maintenance",
+    "ic_expense_transport", "ic_expense_personal", "ic_expense_health", "ic_expense_other",
+)
+for icon_name in required_raster_icons:
+    if icon_name not in screen:
+        errors.append(f"Dedicated icon mapping is missing: {icon_name}")
+icon_sheet = ROOT / "app/src/main/assets/byepro-icons-sheet.png"
+if not icon_sheet.is_file():
+    errors.append("The Native raster icon sheet is missing.")
+if list((ROOT / "app/src/main/res/drawable").glob("ic_*.xml")):
+    errors.append("VectorDrawable icons are prohibited; use generated raster PNG resources.")
+if "generateFinanceRasterIcons" not in read(ROOT / "app/build.gradle.kts"):
+    errors.append("Gradle must generate Native raster icon resources before resource merging.")
 
 # Add menus remain available for every category in their own section.
 create_menu = screen.split("private fun showCreateMenu(anchor: View)", 1)[-1].split("private fun addMenuAction", 1)[0]
@@ -253,6 +272,25 @@ required_strings = (
     "login_description",
     "login_security_note",
     "login_invalid",
+    "calculator_expression",
+    "calculator_amount",
+    "calculator_percent",
+    "calculator_people",
+    "calculator_result_placeholder",
+    "calculator_percentage",
+    "calculator_discount",
+    "calculator_split",
+    "calculator_per_person",
+    "calculator_remainder",
+    "calculator_scientific",
+    "calculator_financial",
+    "calculator_calculate",
+    "calculator_history",
+    "calculator_copy",
+    "calculator_copied",
+    "calculator_invalid_expression",
+    "calculator_invalid_financial",
+    "use_result",
 )
 for string_name in required_strings:
     pattern = rf'<string\s+name="{re.escape(string_name)}">'
