@@ -13,6 +13,7 @@ import android.view.Gravity
 import android.view.ContextThemeWrapper
 import android.view.View
 import android.view.ViewGroup
+import android.view.MotionEvent
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.PopupMenu
@@ -23,6 +24,7 @@ import com.byepro.bye_pro_finance.data.DashboardRepository
 import com.byepro.bye_pro_finance.data.FinanceWriteRepository
 import com.byepro.bye_pro_finance.data.FinanceRuleException
 import com.byepro.bye_pro_finance.data.LegacyFinanceDatabase
+import com.byepro.bye_pro_finance.data.LocalAuthentication
 import com.byepro.bye_pro_finance.domain.ActivityItem
 import com.byepro.bye_pro_finance.domain.DashboardSummary
 import com.byepro.bye_pro_finance.domain.FinanceRecord
@@ -56,6 +58,7 @@ class MainActivity : Activity() {
     }
 
     private lateinit var database: LegacyFinanceDatabase
+    private lateinit var localAuthentication: LocalAuthentication
     private lateinit var repository: DashboardRepository
     private lateinit var writeRepository: FinanceWriteRepository
     private lateinit var root: LinearLayout
@@ -63,6 +66,9 @@ class MainActivity : Activity() {
     private lateinit var pageContent: LinearLayout
     private lateinit var navigation: LinearLayout
 
+    private enum class EntryStage { WELCOME, LOGIN, APP }
+
+    private var entryStage = EntryStage.WELCOME
     private var activeSection = Section.DASHBOARD
     private var selectedHomeCategory = HomeCategory.MONTHLY_BILLS
     private var selectedMonth = YearMonth.now()
@@ -77,6 +83,12 @@ class MainActivity : Activity() {
         // Delete only obsolete theme catalogue/background preferences. Financial
         // tables and every work, home, bill, debt and payment row are untouched.
         database.deleteSettings(FinanceAppearance.LEGACY_SETTING_KEYS)
+        localAuthentication = LocalAuthentication(
+            readSetting = database::readSetting,
+            writeSetting = database::writeSetting
+        ).apply {
+            initializeIfNeeded()
+        }
         repository = DashboardRepository(database)
         writeRepository = FinanceWriteRepository(database)
         localeCode = database.readSetting("locale")?.let {
@@ -95,8 +107,7 @@ class MainActivity : Activity() {
 
         darkTheme = resolveDarkTheme()
         applySystemBars()
-        buildApplicationShell()
-        renderCurrentSection()
+        showWelcomeScreen()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -109,6 +120,237 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         if (::database.isInitialized) database.close()
         super.onDestroy()
+    }
+
+    private fun showWelcomeScreen() {
+        entryStage = EntryStage.WELCOME
+        val palette = FinanceDesignSystem.colors(darkTheme)
+        val screen = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+            gravity = Gravity.CENTER
+            setPadding(
+                dp(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
+                dp(FinanceDesignTokens.PAGE_VERTICAL_PADDING),
+                dp(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
+                dp(FinanceDesignTokens.PAGE_VERTICAL_PADDING)
+            )
+            setBackgroundColor(palette.background)
+        }
+
+        val panel = FinanceComponents.card(this, darkTheme)
+        val mark = FinanceDesignSystem.iconBox(
+            this,
+            darkTheme,
+            R.drawable.ic_bye_pro_finance,
+            selected = true
+        )
+        panel.addView(mark, LinearLayout.LayoutParams(
+            dp(FinanceDesignTokens.WELCOME_ICON_SIZE),
+            dp(FinanceDesignTokens.WELCOME_ICON_SIZE)
+        ).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
+            bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING)
+        })
+        panel.addView(FinanceDesignSystem.text(
+            this,
+            s(R.string.welcome_title),
+            FinanceDesignTokens.TEXT_PAGE_TITLE_SP,
+            palette.text,
+            bold = true
+        ).apply {
+            gravity = Gravity.CENTER
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+        })
+        panel.addView(FinanceDesignSystem.text(
+            this,
+            s(R.string.welcome_description),
+            FinanceDesignTokens.TEXT_BODY_SP,
+            palette.secondaryText
+        ).apply {
+            gravity = Gravity.CENTER
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+            setPadding(
+                0,
+                dp(FinanceDesignTokens.SECTION_SPACING),
+                0,
+                dp(FinanceDesignTokens.SECTION_SPACING)
+            )
+        })
+        panel.addView(FinanceDesignSystem.button(
+            this,
+            darkTheme,
+            s(R.string.continue_to_login),
+            primary = true
+        ) {
+            continueFromWelcome()
+        }, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(FinanceDesignTokens.BUTTON_HEIGHT)
+        ))
+        panel.addView(FinanceDesignSystem.text(
+            this,
+            s(R.string.swipe_to_continue),
+            FinanceDesignTokens.TEXT_CAPTION_SP,
+            palette.secondaryText
+        ).apply {
+            gravity = Gravity.CENTER
+            setPadding(
+                0,
+                dp(FinanceDesignTokens.SPACE_12),
+                0,
+                0
+            )
+        })
+
+        screen.addView(panel, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ))
+        var startX = 0f
+        var startY = 0f
+        screen.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = event.x
+                    startY = event.y
+                    false
+                }
+                MotionEvent.ACTION_UP -> {
+                    val deltaX = event.x - startX
+                    val deltaY = event.y - startY
+                    if (kotlin.math.abs(deltaX) >= dp(FinanceDesignTokens.SWIPE_THRESHOLD) &&
+                        kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY)
+                    ) {
+                        continueFromWelcome()
+                        true
+                    } else {
+                        false
+                    }
+                }
+                else -> false
+            }
+        }
+        setContentView(screen)
+    }
+
+    private fun continueFromWelcome() {
+        if (entryStage != EntryStage.WELCOME) return
+        if (localAuthentication.isEnabled()) {
+            showLoginScreen()
+        } else {
+            enterApplication()
+        }
+    }
+
+    private fun showLoginScreen() {
+        entryStage = EntryStage.LOGIN
+        val palette = FinanceDesignSystem.colors(darkTheme)
+        val screen = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+            gravity = Gravity.CENTER
+            setPadding(
+                dp(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
+                dp(FinanceDesignTokens.PAGE_VERTICAL_PADDING),
+                dp(FinanceDesignTokens.PAGE_HORIZONTAL_PADDING),
+                dp(FinanceDesignTokens.PAGE_VERTICAL_PADDING)
+            )
+            setBackgroundColor(palette.background)
+        }
+        val panel = FinanceComponents.card(this, darkTheme)
+        panel.addView(FinanceDesignSystem.text(
+            this,
+            s(R.string.login_title),
+            FinanceDesignTokens.TEXT_PAGE_TITLE_SP,
+            palette.text,
+            bold = true
+        ).apply {
+            gravity = Gravity.CENTER
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+        })
+        panel.addView(FinanceDesignSystem.text(
+            this,
+            s(R.string.login_description),
+            FinanceDesignTokens.TEXT_BODY_SP,
+            palette.secondaryText
+        ).apply {
+            gravity = Gravity.CENTER
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+            setPadding(0, dp(FinanceDesignTokens.SPACE_8), 0,
+                dp(FinanceDesignTokens.SECTION_SPACING))
+        })
+
+        val username = FinanceDesignSystem.input(
+            this,
+            darkTheme,
+            s(R.string.username),
+            initialValue = localAuthentication.currentUsername()
+        )
+        panel.addView(username, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(FinanceDesignTokens.BUTTON_HEIGHT)
+        ).apply {
+            bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING / 2)
+        })
+
+        val password = FinanceDesignSystem.input(
+            this,
+            darkTheme,
+            s(R.string.password)
+        ).apply {
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+        panel.addView(password, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(FinanceDesignTokens.BUTTON_HEIGHT)
+        ).apply {
+            bottomMargin = dp(FinanceDesignTokens.SECTION_SPACING / 2)
+        })
+
+        val errorMessage = FinanceDesignSystem.text(
+            this,
+            "",
+            FinanceDesignTokens.TEXT_CAPTION_SP,
+            palette.danger
+        ).apply {
+            gravity = Gravity.CENTER
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+            minHeight = dp(FinanceDesignTokens.SECTION_HEADER_HEIGHT)
+        }
+        panel.addView(errorMessage)
+        panel.addView(FinanceDesignSystem.button(
+            this,
+            darkTheme,
+            s(R.string.login),
+            primary = true
+        ) {
+            if (localAuthentication.authenticate(
+                    username.text.toString(),
+                    password.text.toString()
+                )
+            ) {
+                enterApplication()
+            } else {
+                password.text?.clear()
+                errorMessage.text = s(R.string.login_invalid)
+            }
+        }, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            dp(FinanceDesignTokens.BUTTON_HEIGHT)
+        ))
+        screen.addView(panel, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        ))
+        setContentView(screen)
+    }
+
+    private fun enterApplication() {
+        entryStage = EntryStage.APP
+        applySystemBars()
+        buildApplicationShell()
+        renderCurrentSection()
     }
 
     private fun localizedContext(): Context {
@@ -1383,7 +1625,8 @@ class MainActivity : Activity() {
     private fun showSettings() {
         val options = arrayOf(
             s(R.string.appearance),
-            s(R.string.language)
+            s(R.string.language),
+            s(R.string.login_security)
         )
         dialogBuilder()
             .setTitle(s(R.string.settings))
@@ -1391,6 +1634,7 @@ class MainActivity : Activity() {
                 when (which) {
                     0 -> showAppearanceModePicker()
                     1 -> showLanguagePicker()
+                    2 -> showSecuritySettings()
                 }
             }
             .setNegativeButton(s(R.string.cancel), null)
@@ -1417,7 +1661,10 @@ class MainActivity : Activity() {
                 themeMode = modes[which].storageValue
                 database.writeSetting(FinanceAppearance.SETTINGS_KEY, themeMode)
                 dialog.dismiss()
-                recreate()
+                darkTheme = resolveDarkTheme()
+                applySystemBars()
+                buildApplicationShell()
+                renderCurrentSection()
             }
             .setNegativeButton(s(R.string.cancel), null)
             .show()
@@ -1435,11 +1682,90 @@ class MainActivity : Activity() {
                 localeCode = if (which == 1) "en" else "ar"
                 database.writeSetting("locale", localeCode)
                 dialog.dismiss()
-                recreate()
+                buildApplicationShell()
+                renderCurrentSection()
             }
             .setNegativeButton(s(R.string.cancel), null)
             .show()
     }
+
+    private fun showSecuritySettings() {
+        val enabled = localAuthentication.isEnabled()
+        val options = arrayOf(
+            s(R.string.change_login_credentials),
+            if (enabled) s(R.string.disable_login) else s(R.string.enable_login)
+        )
+        dialogBuilder()
+            .setTitle(s(R.string.login_security))
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showChangeCredentialsDialog()
+                    1 -> confirmLoginToggle(!enabled)
+                }
+            }
+            .setNegativeButton(s(R.string.cancel), null)
+            .show()
+    }
+
+    private fun confirmLoginToggle(enable: Boolean) {
+        val message = if (enable) s(R.string.enable_login_confirm)
+            else s(R.string.disable_login_confirm)
+        dialogBuilder()
+            .setTitle(s(R.string.login_security))
+            .setMessage(message)
+            .setPositiveButton(s(R.string.confirm)) { _, _ ->
+                localAuthentication.setEnabled(enable)
+                showToast(
+                    s(if (enable) R.string.login_enabled else R.string.login_disabled)
+                )
+            }
+            .setNegativeButton(s(R.string.cancel), null)
+            .show()
+    }
+
+    private fun showChangeCredentialsDialog() {
+        val form = createForm()
+        val currentPassword = addPasswordField(form, s(R.string.current_password))
+        val newUsername = formInput(
+            form,
+            s(R.string.new_username),
+            localAuthentication.currentUsername()
+        )
+        val newPassword = addPasswordField(form, s(R.string.new_password))
+        val confirmPassword = addPasswordField(form, s(R.string.confirm_new_password))
+
+        dialogBuilder()
+            .setTitle(s(R.string.change_login_credentials))
+            .setView(form)
+            .setPositiveButton(s(R.string.save)) { _, _ ->
+                val passwordValue = newPassword.text.toString()
+                if (passwordValue != confirmPassword.text.toString()) {
+                    showToast(s(R.string.passwords_do_not_match))
+                    return@setPositiveButton
+                }
+                when (localAuthentication.changeCredentials(
+                    currentPassword = currentPassword.text.toString(),
+                    newUsername = newUsername.text.toString(),
+                    newPassword = passwordValue
+                )) {
+                    LocalAuthentication.CredentialChangeResult.SUCCESS ->
+                        showToast(s(R.string.credentials_updated))
+                    LocalAuthentication.CredentialChangeResult.CURRENT_PASSWORD_INVALID ->
+                        showToast(s(R.string.current_password_invalid))
+                    LocalAuthentication.CredentialChangeResult.USERNAME_TOO_SHORT ->
+                        showToast(s(R.string.username_too_short))
+                    LocalAuthentication.CredentialChangeResult.PASSWORD_TOO_SHORT ->
+                        showToast(s(R.string.password_too_short))
+                }
+            }
+            .setNegativeButton(s(R.string.cancel), null)
+            .show()
+    }
+
+    private fun addPasswordField(form: LinearLayout, hint: String): EditText =
+        formInput(form, hint).apply {
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
 
     private fun sectionTitle(section: Section): String = when (section) {
         Section.DASHBOARD -> s(com.byepro.bye_pro_finance.R.string.dashboard)
