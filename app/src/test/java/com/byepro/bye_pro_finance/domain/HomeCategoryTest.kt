@@ -1,7 +1,5 @@
-package com.byepro.bye_finance.domain
+package com.byepro.bye_pro_finance.domain
 
-import com.byepro.bye_pro_finance.domain.HomeCategory
-import com.byepro.bye_pro_finance.domain.HomeRecordSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
