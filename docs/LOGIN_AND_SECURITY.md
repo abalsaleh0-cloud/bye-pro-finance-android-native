@@ -105,7 +105,7 @@ There is no password-recovery flow in this stage. Keep the updated credentials s
 
 ## 7. Design System and Arabic/English behaviour
 
-The Welcome and Login screens are not visually separate from the application. They use the same semantic colors, page/card spacing, typography, input height, button height, corner radii and ripple helpers documented in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md). The screen direction remains RTL in both languages; English changes resource text only.
+Welcome and Login use the shared semantic palette and typography, but not the generic centered-card layout. Welcome uses original finance-orbit artwork, a BYE PRO signature, statement-led typography and a progress rule. Login uses a separate private-access hierarchy and open underlined fields instead of a boxed stock form. The screen direction remains RTL in both languages; English changes resource text only.
 
 The Welcome screen supports both the visible Continue button and a horizontal swipe gesture. The Login form pre-fills the current username, masks the password field and shows a localized error without opening the app when credentials are incorrect.
 
