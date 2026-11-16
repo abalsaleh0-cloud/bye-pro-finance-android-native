@@ -1,6 +1,7 @@
 package com.byepro.bye_pro_finance.ui
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Typeface
 import android.view.Gravity
 import android.view.View
@@ -95,7 +96,7 @@ object FinanceComponents {
             val iconHolder = FrameLayout(context).apply {
                 // Telegram-style navigation has no filled selected pill:
                 // selection is communicated by icon and label color only.
-                setBackgroundColor(0x00000000)
+                setBackgroundColor(Color.TRANSPARENT)
                 val icon = ImageView(context).apply {
                     setImageResource(item.iconResource)
                     setColorFilter(if (item.selected) palette.accent else palette.secondaryText)
