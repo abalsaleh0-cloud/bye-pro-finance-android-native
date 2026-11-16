@@ -47,7 +47,7 @@ Automated coverage:
 
 - `HomeCategoryTest.homeHasExactlyFourCategoriesInTheRequiredOrder`
 - `HomeCategoryTest.eachHomeCategoryUsesItsOwnDataSourceAndFilter`
-- The design-system CI checker confirms four Home routes, five Work routes, the shared numbered index and bilingual route labels.
+- The design-system CI checker confirms four Home routes, five Work routes, the shared icon tabs and bilingual route labels.
 
 ## 3. Welcome and local login
 
@@ -136,4 +136,14 @@ These checks cannot be proven by static source inspection alone:
 | 4 | الباقي | Actual cash left in Work after household transfers, with the unpaid salary amount shown separately | `workRemaining = cashReceived - transfersTotal`; secondary `currentSalaryOutstanding = max(salary - payments - advances, 0)` | None — calculated view |
 | 5 | تحويلات المنزل | Work-to-Home transfer history | `work_home_transfers` | Transfer to Home |
 
-Work Add always exposes four actions in the requested order: salary, payment, advance, Home transfer. Both Work and Home use the same numbered editorial index component; neither section uses the old segmented pill selector.
+Work Add always exposes four actions in the requested order: salary, payment, advance, Home transfer. Both Work and Home use the same separate Native icon tabs component; neither section uses the old segmented pill selector.
+
+
+## Native tabs, icons and shared month tools
+
+- Work and Home have separate horizontal tab rows designed natively; no Flutter tab layout is copied.
+- Every tab has a unique icon and localized title. Monthly bills and rent are visually distinct. All nine expense categories have their own icons.
+- Icon meanings are mapped from the Flutter icon choices, while this Native app uses generated PNG resources, not VectorDrawable artwork.
+- Month choice is shared across Dashboard, Work, Home, Debts and AI, with both the available-month list and native calendar picker.
+- Every form field has a persistent label in Arabic and English. Numeric entry accepts ASCII digits only (123) and remains LTR in both locales.
+- The calculator supports scientific expressions, percentage, discount and amount splitting, with copy and insertion into the active form field.
