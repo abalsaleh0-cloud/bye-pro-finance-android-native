@@ -56,7 +56,7 @@ jobs:
         run: |
           set -euo pipefail
           SCREEN="app/src/main/java/com/byepro/bye_pro_finance/MainActivity.kt"
-          if grep -nE 'dp[[:space:]]*\\([[:space:]]*[0-9]+|textSize[[:space:]]*=|setTextColor[[:space:]]*\\(0x|setBackgroundColor[[:space:]]*\\(0x|Color\\.parseColor' "$SCREEN"; then
+          if grep -nE 'dp[[:space:]]*\([[:space:]]*[0-9]+|textSize[[:space:]]*=|setTextColor[[:space:]]*\(0x|setBackgroundColor[[:space:]]*\(0x|Color\.parseColor' "$SCREEN"; then
             echo "::error::MainActivity contains screen-local styling. Use FinanceDesignTokens and FinanceComponents."
             exit 1
           fi
