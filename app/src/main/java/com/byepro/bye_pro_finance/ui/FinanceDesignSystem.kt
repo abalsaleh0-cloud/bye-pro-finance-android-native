@@ -82,6 +82,29 @@ object FinanceDesignTokens {
     const val WELCOME_ICON_SIZE = 64
     const val SWIPE_THRESHOLD = 72
 
+    // Editorial Home/Work navigation and original entry surfaces.
+    const val HOME_CATEGORY_ROW_HEIGHT = 72
+    const val HOME_CATEGORY_RAIL_WIDTH = 3
+    const val HOME_CATEGORY_RAIL_HEIGHT = 40
+    const val HOME_CATEGORY_INDEX_WIDTH = 48
+    const val HOME_CATEGORY_ACTIVE_RADIUS = 8
+    const val TEXT_INDEX_SP = 22f
+    const val TEXT_ENTRY_TITLE_SP = 30f
+    const val TEXT_ENTRY_KICKER_SP = 12f
+    const val TEXT_BALANCE_SP = 28f
+    const val ENTRY_BRAND_ROW_HEIGHT = 44
+    const val ENTRY_BRAND_ICON_SIZE = 36
+    const val ENTRY_MARK_PADDING = SPACE_6
+    const val ENTRY_ARTWORK_HEIGHT = 184
+    const val ENTRY_LOGIN_ARTWORK_HEIGHT = 112
+    const val ENTRY_ORBIT_MARK_SIZE = 64
+    const val ENTRY_ORBIT_CENTER_RADIUS = 36
+    const val ENTRY_ARTWORK_STROKE = 1
+    const val ENTRY_FIELD_HEIGHT = 52
+    const val ENTRY_FIELD_BOTTOM_SPACE = SPACE_12
+    const val ENTRY_ERROR_HEIGHT = 32
+    const val ENTRY_FOOTER_HEIGHT = 32
+
     // Comparison chart geometry (dp).
     const val CHART_LABEL_ROW_HEIGHT = 24
     const val CHART_BAR_HEIGHT = 7
