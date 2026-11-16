@@ -119,5 +119,6 @@ These checks cannot be proven by static source inspection alone:
 ## 6. Current verification record
 
 - Earlier CI run `43929573545` failed during Kotlin Gradle plugin resolution before tests ran. No source/test result was produced by that run.
-- This branch upgrades Kotlin Gradle Plugin to `2.4.21`; the new CI result must be recorded here after it completes.
-- Until the new CI run and device checklist pass, the work is **implemented in source but not fully accepted**.
+- CI run `43933532090` on commit `c33cd65b209b79b5185ff01224074a9eaeb93144` passed: unit tests, Design System guardrails, application identity check, debug APK assembly and artifact upload.
+- The preview artifact is `bye-pro-finance-native-preview` (ID `14259697985`, 1,003,721 bytes, expiry 2026-11-23).
+- Physical-device acceptance remains open; a successful CI run does not prove touchscreen, keyboard, screen-size or real database migration behaviour.
