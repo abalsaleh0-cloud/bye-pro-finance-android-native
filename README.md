@@ -22,12 +22,12 @@ Read the relevant contract before changing code.
 
 - Native UI: Kotlin with Android framework Views.
 - Top-level destinations: **الرئيسية، العمل، المنزل، الديون، الذكاء الاصطناعي**.
-- Home has exactly three categories: Monthly Bills, Rent and Expenses.
+- Home has four routes: Monthly Bills, Monthly Rent, Expenses and From Work (actual Home transfers). Work has five routes: Salary, Payment, Advance, Remaining and Home Transfers. Both use the same numbered editorial index.
 - Design: one shared Design System for all screens, dialogs, popups, forms, navigation and empty states.
 - Appearance: System, Light and Dark. Only colors change; geometry stays fixed.
 - Language: Arabic by default. English changes text only; the interface remains RTL.
 - Release application ID: `com.byepro.bye_pro_finance`.
-- Native version: `1.1.56 (157)`.
+- Native version: `1.1.57 (158)`.
 - Debug preview suffix: `.nativepreview`; its app sandbox is isolated from production.
 - Database: compatible SQLite file `bye_pro_finance.sqlite`, schema version 2.
 
@@ -44,8 +44,8 @@ Read the relevant contract before changing code.
 ## Main code entry points
 
 - `ui/FinanceDesignSystem.kt`: semantic tokens, palettes and primitive view helpers.
-- `ui/FinanceComponents.kt`: reusable visual components.
-- `domain/HomeCategory.kt`: three-category Home contract and data-source mapping.
+- `ui/FinanceComponents.kt`: shared category index, original finance-orbit entry art, editorial fields and shared UI components.
+- `domain/HomeCategory.kt` and `domain/WorkCategory.kt`: four Home routes and five Work routes with data-source mapping.
 - `data/LocalAuthentication.kt`: device-local login and password verifier.
 - `MainActivity.kt`: navigation, welcome/login entry and screen composition.
 
