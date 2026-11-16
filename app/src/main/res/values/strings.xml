@@ -168,4 +168,23 @@
     <string name="login_security_note">حماية محلية • لا تتم مزامنة كلمة المرور</string>
     <string name="home_received_from_work_total">إجمالي الوارد من العمل</string>
     <string name="home_received_from_work_total_caption">مجموع التحويلات المسجلة من قسم العمل خلال هذا الشهر</string>
+    <string name="calculator_expression">العملية الحسابية</string>
+    <string name="calculator_amount">المبلغ</string>
+    <string name="calculator_percent">النسبة المئوية</string>
+    <string name="calculator_people">عدد الأشخاص</string>
+    <string name="calculator_result_placeholder">النتيجة تظهر هنا</string>
+    <string name="calculator_percentage">نسبة مئوية</string>
+    <string name="calculator_discount">خصم</string>
+    <string name="calculator_split">تقسيم مبلغ</string>
+    <string name="calculator_per_person">حصة كل شخص</string>
+    <string name="calculator_remainder">المتبقي</string>
+    <string name="calculator_scientific">علمية</string>
+    <string name="calculator_financial">مالية</string>
+    <string name="calculator_calculate">احسب</string>
+    <string name="calculator_history">سجل العمليات</string>
+    <string name="calculator_copy">نسخ النتيجة</string>
+    <string name="calculator_copied">تم نسخ النتيجة</string>
+    <string name="calculator_invalid_expression">العملية غير صحيحة أو لا يمكن حسابها</string>
+    <string name="calculator_invalid_financial">تحقق من إدخال المبلغ والنسبة أو عدد الأشخاص</string>
+    <string name="use_result">استخدام النتيجة</string>
 </resources>
