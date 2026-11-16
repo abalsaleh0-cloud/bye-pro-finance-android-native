@@ -14,7 +14,7 @@
     <string name="salary_total">Total salaries</string>
     <string name="advances_total">Total advances</string>
     <string name="payments_total">Total payments</string>
-    <string name="current_salary_outstanding">Current salary remaining</string>
+    <string name="current_salary_outstanding">Unpaid salary balance</string>
     <string name="home_expenses_total">Total household expenses</string>
     <string name="transfers_total">Total transfers</string>
     <string name="bills_outstanding">Unpaid bills</string>
@@ -157,7 +157,7 @@
     <string name="work_advance_tag">Advances recorded against salary</string>
     <string name="work_remaining_tag">Balance after payments and advances</string>
     <string name="work_home_transfers_tag">Amounts transferred into the household</string>
-    <string name="work_remaining_formula">Salary − payments − advances</string>
+    <string name="work_remaining_formula">Cash received − transfers to Home</string>
     <string name="home_monthly_bills_tag">Service commitments</string>
     <string name="home_rent_tag">Monthly housing commitment</string>
     <string name="home_expenses_tag">Everyday household spending</string>
@@ -166,4 +166,6 @@
     <string name="login_kicker">PRIVATE ACCESS • THIS DEVICE</string>
     <string name="entry_brand_meta">PERSONAL FINANCE</string>
     <string name="login_security_note">On-device protection • Your password is not synced</string>
+    <string name="home_received_from_work_total">Total received from Work</string>
+    <string name="home_received_from_work_total_caption">Sum of transfers recorded from the Work section this month</string>
 </resources>
