@@ -13,6 +13,7 @@ This file separates implemented work from incomplete work. A task is not marked 
 - [x] Central design token object for spacing, typography, radii and dimensions.
 - [x] Shared Light and Dark semantic palettes.
 - [x] Shared components for app bar, navigation, section heading, month selector, metric row, record row, grouped list, card, empty state and divider.
+- [x] CI parity checker for Kotlin palette vs Android XML resources, core dimensions and screen-local styling guardrails.
 - [x] Appearance modes: System, Light and Dark.
 - [x] Arabic default strings and English string resources.
 - [x] SQLite helper targeting the existing Flutter/Drift database file and schema version 2.
