@@ -53,6 +53,7 @@ jobs:
 
       - name: Verify Design System consistency
         run: python3 scripts/check_design_system.py
+
       - name: Verify Native application identity
         run: grep -F 'applicationId = "com.byepro.bye_pro_finance"' app/build.gradle.kts
 
