@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""Static guardrails for the BYE PRO Finance Native Design System."""
+
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+UI = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/ui"
+SCREEN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/MainActivity.kt"
+COMPONENTS = UI / "FinanceComponents.kt"
+SYSTEM = UI / "FinanceDesignSystem.kt"
+COLORS = ROOT / "app/src/main/res/values/colors.xml"
+DIMENS = ROOT / "app/src/main/res/values/dimens.xml"
+STYLE_FILES = [
+    ROOT / "app/src/main/res/values/styles.xml",
+    ROOT / "app/src/main/res/values-night/styles.xml",
+    ROOT / "app/src/main/res/drawable/finance_dialog_background_dark.xml",
+    ROOT / "app/src/main/res/drawable/finance_dialog_background_light.xml",
+]
+
+errors: list[str] = []
+
+
+def read(path: Path) -> str:
+    if not path.is_file():
+        errors.append(f"Missing required file: {path.relative_to(ROOT)}")
+        return ""
+    return path.read_text(encoding="utf-8")
+
+
+def kotlin_palette(source: str, mode: str) -> dict[str, str]:
+    match = re.search(
+        rf"val {mode} = FinanceDesignColors\((.*?)\n    \)",
+        source,
+        flags=re.DOTALL,
+    )
+    if not match:
+        errors.append(f"Could not find FinanceDesignSystem.{mode} palette")
+        return {}
+    values = dict(
+        re.findall(
+            r"(\w+)\s*=\s*0x([0-9A-Fa-f]{8})\.toInt\(\)",
+            match.group(1),
+        )
+    )
+    result: dict[str, str] = {}
+    for key, argb in values.items():
+        if not argb.upper().startswith("FF"):
+            errors.append(f"{mode}.{key} must be an opaque ARGB color")
+            continue
+        snake = re.sub(r"(?<!^)(?=[A-Z])", "_", key).lower()
+        result[f"finance_{mode}_{snake}"] = "#" + argb[2:].upper()
+    return result
+
+
+system = read(SYSTEM)
+colors_xml = read(COLORS)
+dimens_xml = read(DIMENS)
+screen = read(SCREEN)
+components = read(COMPONENTS)
+styles = "\n".join(read(path) for path in STYLE_FILES)
+
+# Android resource theme colors must mirror the semantic Kotlin palettes.
+xml_colors = {
+    name: value.upper()
+    for name, value in re.findall(
+        r'<color\s+name="([^"]+)"\s*>(#[0-9A-Fa-f]{6,8})</color>',
+        colors_xml,
+    )
+}
+for mode in ("dark", "light"):
+    for name, expected in kotlin_palette(system, mode).items():
+        actual = xml_colors.get(name)
+        if actual != expected:
+            errors.append(
+                f"Palette mismatch for {name}: Kotlin={expected}, XML={actual or 'missing'}"
+            )
+
+# Platform-owned widgets must use the same core geometry tokens.
+token_block_match = re.search(
+    r"object FinanceDesignTokens \{(.*?)\n\}",
+    system,
+    flags=re.DOTALL,
+)
+token_block = token_block_match.group(1) if token_block_match else ""
+tokens = {
+    name: int(value)
+    for name, value in re.findall(
+        r"const val (BUTTON_HEIGHT|TOUCH_TARGET_SIZE|DIALOG_RADIUS)\s*=\s*(\d+)",
+        token_block,
+    )
+}
+xml_dimens = {
+    name: value
+    for name, value in re.findall(
+        r'<dimen\s+name="([^"]+)"\s*>(\d+)dp</dimen>',
+        dimens_xml,
+    )
+}
+dimension_map = {
+    "BUTTON_HEIGHT": "finance_button_height",
+    "TOUCH_TARGET_SIZE": "finance_touch_target_size",
+    "DIALOG_RADIUS": "finance_dialog_radius",
+}
+for token, resource in dimension_map.items():
+    expected = tokens.get(token)
+    actual = xml_dimens.get(resource)
+    if expected is None or actual is None or int(actual) != expected:
+        errors.append(
+            f"Dimension mismatch for {resource}: token={expected}, XML={actual or 'missing'}"
+        )
+
+# Screen code must consume tokens/components, not invent visual rules locally.
+screen_rules = {
+    "raw dp literal": r"\bdp\s*\(\s*\d+",
+    "direct text size": r"\btextSize\s*=",
+    "literal text-size value": r"\b(?:11|12|13|14|15|16|20)f\b",
+    "literal text color": r"setTextColor\s*\(\s*0x",
+    "literal background color": r"setBackgroundColor\s*\(\s*0x",
+    "ad-hoc parsed color": r"Color\.parseColor",
+}
+for label, pattern in screen_rules.items():
+    if re.search(pattern, screen):
+        errors.append(f"MainActivity contains {label}; use FinanceDesignTokens/FinanceComponents")
+
+component_rules = {
+    "raw dp literal": r"\bdp\s*\(\s*context\s*,\s*\d+",
+    "literal text-size value": r"\b(?:11|12|13|14|15|16|20)f\b",
+}
+for label, pattern in component_rules.items():
+    if re.search(pattern, components):
+        errors.append(f"FinanceComponents contains {label}; move it into FinanceDesignTokens")
+
+# Hex values belong only in the palette resource, not individual framework styles.
+if re.search(r"#[0-9A-Fa-f]{6,8}", styles):
+    errors.append("A framework style/drawable contains a literal color; use @color resources")
+
+if errors:
+    print("Design System verification FAILED:")
+    for error in errors:
+        print(f" - {error}")
+    sys.exit(1)
+
+print("Design System verification PASSED: palette parity, shared dimensions and screen guardrails are valid.")
