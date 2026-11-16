@@ -167,7 +167,7 @@ home_category_markers = {
 for category, mapping in home_category_markers.items():
     if category not in home_domain or mapping not in home_domain:
         errors.append(f"Home category mapping is missing or changed: {category}")
-if len(re.findall(r"^    (?:MONTHLY_BILLS|RENT|EXPENSES|RECEIVED_FROM_WORK)\\(", home_domain, flags=re.MULTILINE)) != 4:
+if len(re.findall(r"^    (?:MONTHLY_BILLS|RENT|EXPENSES|RECEIVED_FROM_WORK)\(", home_domain, flags=re.MULTILINE)) != 4:
     errors.append("Home must contain exactly four primary categories.")
 
 # Work has five routes; Remaining is a calculated route, not an Add operation.
@@ -181,7 +181,7 @@ work_category_markers = (
 for marker in work_category_markers:
     if marker not in work_domain:
         errors.append(f"Work category mapping is missing or changed: {marker}")
-if len(re.findall(r"^    (?:SALARY|PAYMENT|ADVANCE|REMAINING|HOME_TRANSFERS)\\(", work_domain, flags=re.MULTILINE)) != 5:
+if len(re.findall(r"^    (?:SALARY|PAYMENT|ADVANCE|REMAINING|HOME_TRANSFERS)\(", work_domain, flags=re.MULTILINE)) != 5:
     errors.append("Work must contain exactly five primary routes.")
 
 # Screens consume the shared category index and original entry components.
@@ -252,7 +252,7 @@ required_strings = (
     "login_invalid",
 )
 for string_name in required_strings:
-    pattern = rf'<string\\s+name="{re.escape(string_name)}">'
+    pattern = rf'<string\s+name="{re.escape(string_name)}">'
     if not re.search(pattern, strings_ar):
         errors.append(f"Arabic string resource is missing: {string_name}")
     if not re.search(pattern, strings_en):
