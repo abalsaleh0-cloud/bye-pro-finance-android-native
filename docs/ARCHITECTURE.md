@@ -94,7 +94,7 @@ The application ID and release signing lineage must remain compatible for an in-
 
 Amounts are stored as integer minor units. Dates and timestamps are stored as epoch-millisecond values or as due year/month fields, as appropriate. Keep these storage units unchanged unless a versioned and tested migration is explicitly introduced.
 
-### Data-safety rules
+For the complete field-by-field schema, relationships, dashboard formulas and validation invariants, see [DATA_DICTIONARY.md](DATA_DICTIONARY.md).\n\n### Data-safety rules
 
 - Never delete or recreate finance tables as part of a UI redesign.
 - Never clear the database to fix a visual defect.
