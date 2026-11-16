@@ -12,6 +12,9 @@ UI = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/ui"
 SCREEN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/MainActivity.kt"
 COMPONENTS = UI / "FinanceComponents.kt"
 SYSTEM = UI / "FinanceDesignSystem.kt"
+HOME_DOMAIN = ROOT / "app/src/main/java/com/byepro/bye_pro_finance/domain/HomeCategory.kt"
+STRINGS_AR = ROOT / "app/src/main/res/values/strings.xml"
+STRINGS_EN = ROOT / "app/src/main/res/values-en/strings.xml"
 COLORS = ROOT / "app/src/main/res/values/colors.xml"
 DIMENS = ROOT / "app/src/main/res/values/dimens.xml"
 STYLE_FILES = [
@@ -133,6 +136,54 @@ component_rules = {
 for label, pattern in component_rules.items():
     if re.search(pattern, components):
         errors.append(f"FinanceComponents contains {label}; move it into FinanceDesignTokens")
+
+# The Home contract must define exactly the three approved categories and their data sources.
+home_category_markers = {
+    "MONTHLY_BILLS": 'HomeRecordSource.BILLS, billKind = "monthly"',
+    "RENT": 'HomeRecordSource.BILLS, billKind = "rent"',
+    "EXPENSES": "HomeRecordSource.HOME_EXPENSES",
+}
+for category, mapping in home_category_markers.items():
+    if category not in home_domain or mapping not in home_domain:
+        errors.append(f"Home category mapping is missing or changed: {category}")
+if len(re.findall(r"^    (?:MONTHLY_BILLS|RENT|EXPENSES)\\(", home_domain, flags=re.MULTILINE)) != 3:
+    errors.append("Home must contain exactly three primary categories.")
+
+# The screen must consume the shared Home contract and shared entry components.
+for marker in (
+    "HomeCategory.ordered.map",
+    "FinanceComponents.categoryTabs(",
+    "FinanceComponents.categoryDescription(",
+    "private fun showWelcomeScreen()",
+    "private fun showLoginScreen()",
+    "FinanceDesignSystem.button(",
+    "FinanceDesignSystem.input(",
+):
+    if marker not in screen:
+        errors.append(f"MainActivity is missing required shared UI integration: {marker}")
+
+# Launch and Home copy must exist in both supported languages.
+required_strings = (
+    "home_monthly_bills",
+    "home_rent",
+    "home_expenses",
+    "home_monthly_bills_description",
+    "home_rent_description",
+    "home_expenses_description",
+    "welcome_title",
+    "welcome_description",
+    "continue_to_login",
+    "swipe_to_continue",
+    "login_title",
+    "login_description",
+    "login_invalid",
+)
+for string_name in required_strings:
+    pattern = rf'<string\\s+name="{re.escape(string_name)}">'
+    if not re.search(pattern, strings_ar):
+        errors.append(f"Arabic string resource is missing: {string_name}")
+    if not re.search(pattern, strings_en):
+        errors.append(f"English string resource is missing: {string_name}")
 
 # Hex values belong only in the palette resource, not individual framework styles.
 if re.search(r"#[0-9A-Fa-f]{6,8}", styles):
