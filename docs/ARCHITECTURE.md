@@ -112,10 +112,11 @@ For the complete field-by-field schema, relationships, dashboard formulas and va
 | Category | Stored source | Filter | Contents |
 |---|---|---|---|
 | Monthly Bills | `home_bills` | `kind = monthly` | Electricity, water, gas, internet, phone, recurring services and subscriptions |
-| Rent | `home_bills` | `kind = rent` | Rent obligations and installment/payment history |
+| Monthly Rent (الإيجارات الشهرية) | `home_bills` | `kind = rent` | Rent obligations and installment/payment history |
 | Expenses | `home_expenses` | No bill-kind filter | Groceries, utilities, housing, cleaning, maintenance, transport, personal, health and other |
+| Received from Work (الوارد من العمل) | `work_home_transfers` | Selected month | Actual money transferred from Work into Home |
 
-The Home UI and Add menu must use this mapping. Work data remains in its own destination.\n\n### Data-safety rules
+The Home numbered index and Add menu must use this mapping. "Received from Work" is a read-only view over existing transfer rows; the transfer is created from the Work Add menu. Work and Home retain distinct financial destinations.\n\n### Data-safety rules
 
 - Never delete or recreate finance tables as part of a UI redesign.
 - Never clear the database to fix a visual defect.
@@ -181,3 +182,6 @@ Release signing values are read from these environment variables:
 - `KEY_ALIAS`
 
 Relative keystore paths in `key.properties` resolve from the Native repository's `app/` directory. Store signing material securely outside source control.
+### Work category mapping
+
+`domain/WorkCategory.kt` defines five ordered routes: salary, payment, advance, remaining and home transfers. Salary/payment/advance read `work_entries` by kind; Remaining uses the existing monthly salary-outstanding calculation; Home Transfers read `work_home_transfers`. Work Add exposes only the four creation operations: salary, payment, advance and transfer to Home.
