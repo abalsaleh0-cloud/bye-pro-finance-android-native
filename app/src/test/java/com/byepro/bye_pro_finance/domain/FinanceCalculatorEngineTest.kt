@@ -63,6 +63,8 @@ class FinanceCalculatorEngineTest {
         assertEquals("25", FinanceCalculatorEngine.asInsertableAmount(25.0))
         assertNull(FinanceCalculatorEngine.asInsertableAmount(25.5))
         assertNull(FinanceCalculatorEngine.asInsertableAmount(-1.0))
+        assertEquals("9007199254740991", FinanceCalculatorEngine.asInsertableAmount(9007199254740991.0))
+        assertNull(FinanceCalculatorEngine.asInsertableAmount(9007199254740992.0))
         assertTrue(FinanceCalculatorEngine.format(1234.5).contains("."))
     }
 }

@@ -38,7 +38,8 @@ object FinanceCalculatorEngine {
 
     fun asInsertableAmount(value: Double): String? {
         if (!value.isFinite() || value < 0.0 || value != kotlin.math.floor(value)) return null
-        if (value > Long.MAX_VALUE.toDouble()) return null
+        // Match Flutter calculatorValueAsMinorUnits: only IEEE-754 safe integers may enter a money field.
+        if (value > 9_007_199_254_740_991.0) return null
         return value.toLong().toString()
     }
 
