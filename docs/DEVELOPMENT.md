@@ -46,7 +46,7 @@ A passing CI run demonstrates that the configured tests pass and the debug APK a
 ## 4. Required workflow for every change
 
 1. Identify whether the change affects UI, data, financial rules, build configuration, or migration.
-2. Read the relevant contract in `DESIGN_SYSTEM.md` and `ARCHITECTURE.md`.
+2. Read the relevant contract in `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`, and `DATA_DICTIONARY.md` for data/financial changes.
 3. Make the smallest change in the Native repository only.
 4. Add or update automated tests for the changed behaviour.
 5. Update the relevant documentation and `IMPLEMENTATION_STATUS.md`.
