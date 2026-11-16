@@ -26,7 +26,7 @@ The Native version is a separate implementation, not proof that all Flutter feat
 | Java target | 17 |
 | Kotlin JVM target | 17 |
 | Android Gradle Plugin | 9.3.1 |
-| Kotlin Gradle Plugin | 2.4.20 |
+| Kotlin Gradle Plugin | 2.4.21 |
 
 The debug build adds `.nativepreview` to the application ID. This is deliberate: a debug preview installs alongside the production app and has a separate Android sandbox. It does not read the production app's private database or login state.
 
@@ -45,12 +45,21 @@ A release build has the production application ID. It must not be installed over
 | `data/DashboardRepository.kt` | Reads financial records and constructs dashboard summaries |
 | `data/FinanceWriteRepository.kt` | Validates and writes financial operations transactionally |
 | `domain/FinanceModels.kt` | Shared data models exposed to the UI |
+| `domain/HomeCategory.kt` | Exactly three Home categories and their data-source mapping |
 | `app/src/main/res` | Android manifest, string translations, icons, theme and framework resources |
-| `app/src/test` | Unit tests for design tokens, palettes, contrast and appearance |
+| `app/src/test` | Unit tests for design tokens, palettes, contrast, appearance, local login and Home category mapping |
 
 ## 4. Runtime structure and data flow
 
 The current application uses a single `MainActivity` with five destinations: Dashboard, Work, Home, Debts and AI.
+
+### Application-entry flow
+
+1. `onCreate` initializes the existing database, appearance/language preferences and `LocalAuthentication` profile without resetting an existing profile.
+2. `showWelcomeScreen` is the first visible screen for each fresh application process.
+3. Continue button or horizontal swipe calls `continueFromWelcome`.
+4. If local login is enabled, `showLoginScreen` verifies the stored username and password. Otherwise `enterApplication` opens the main shell.
+5. The settings dialog exposes appearance, language and login security. Login security allows credential changes and enable/disable confirmation.
 
 Read flow:
 
@@ -90,11 +99,23 @@ The application ID and release signing lineage must remain compatible for an in-
 | `home_bill_payments` | Bill payment history |
 | `debts` | Creditor and debtor records |
 | `debt_payments` | Debt payment history |
-| `app_settings` | Locale and appearance preferences |
+| `app_settings` | Locale, appearance and device-local login profile/preferences |
 
 Amounts are stored as integer minor units. Dates and timestamps are stored as epoch-millisecond values or as due year/month fields, as appropriate. Keep these storage units unchanged unless a versioned and tested migration is explicitly introduced.
 
-For the complete field-by-field schema, relationships, dashboard formulas and validation invariants, see [DATA_DICTIONARY.md](DATA_DICTIONARY.md).\n\n### Data-safety rules
+For the complete field-by-field schema, relationships, dashboard formulas and validation invariants, see [DATA_DICTIONARY.md](DATA_DICTIONARY.md).
+
+### Home category mapping
+
+`domain/HomeCategory.kt` is the single domain contract for Home:
+
+| Category | Stored source | Filter | Contents |
+|---|---|---|---|
+| Monthly Bills | `home_bills` | `kind = monthly` | Electricity, water, gas, internet, phone, recurring services and subscriptions |
+| Rent | `home_bills` | `kind = rent` | Rent obligations and installment/payment history |
+| Expenses | `home_expenses` | No bill-kind filter | Groceries, utilities, housing, cleaning, maintenance, transport, personal, health and other |
+
+The Home UI and Add menu must use this mapping. Work data remains in its own destination.\n\n### Data-safety rules
 
 - Never delete or recreate finance tables as part of a UI redesign.
 - Never clear the database to fix a visual defect.
