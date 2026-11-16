@@ -87,7 +87,7 @@ Use `FinanceDesignSystem.text` or the relevant shared component. Do not set `Tex
 
 ## 5. Spacing and geometry
 
-All dimensions are dp unless the token name ends in `_SP` or explicitly says otherwise.
+All dimensions are dp unless the token name ends in `_SP` or explicitly says otherwise. This section is the complete public inventory of `FinanceDesignTokens`; do not introduce another numeric style system.
 
 ### Spacing scale
 
@@ -104,29 +104,72 @@ All dimensions are dp unless the token name ends in `_SP` or explicitly says oth
 | `SPACE_18` | 18 |
 | `SPACE_24` | 24 |
 
-### Structural sizes
+### Page, component and input geometry
 
-| Element | Token | Value |
-|---|---|---:|
-| Page horizontal inset | `PAGE_HORIZONTAL_PADDING` | 16 |
-| Page vertical inset | `PAGE_VERTICAL_PADDING` | 12 |
-| Standard section gap | `SECTION_SPACING` | 12 |
-| Card inner padding | `CARD_PADDING` | 16 |
-| App bar height | `APP_BAR_HEIGHT` | 56 |
-| Card radius | `CARD_RADIUS` | 16 |
-| Control radius | `CONTROL_RADIUS` | 12 |
-| Dialog radius | `DIALOG_RADIUS` | 20 |
-| Button / standard field height | `BUTTON_HEIGHT` | 48 |
-| Minimum touch target | `TOUCH_TARGET_SIZE` | 44 |
-| Bottom navigation height | `NAVIGATION_BAR_HEIGHT` | 68 |
-| Section heading height | `SECTION_HEADER_HEIGHT` | 36 |
-| Metric and record row minimum height | `METRIC_TILE_MIN_HEIGHT` / `RECORD_ROW_HEIGHT` | 64 |
-| Icon container | `RECORD_ICON_BOX_SIZE` | 40 |
-| Standard icon | `STANDARD_ICON_SIZE` | 20 |
-| Divider thickness | `DIVIDER_HEIGHT` | 1 |
-| Motion duration | `MOTION_DURATION_MS` | 160 ms |
+| Token | Value | Meaning |
+|---|---:|---|
+| `PAGE_HORIZONTAL_PADDING` | 16 | Horizontal page inset |
+| `PAGE_VERTICAL_PADDING` | 12 | Vertical page inset |
+| `SECTION_SPACING` | 12 | Standard spacing between sections |
+| `CARD_PADDING` | 16 | Inner padding for content cards |
+| `INPUT_HORIZONTAL_PADDING` | 14 | Horizontal text-field inset |
+| `INPUT_VERTICAL_PADDING` | 12 | Vertical text-field inset |
+| `BUTTON_HORIZONTAL_PADDING` | 18 | Horizontal action-button inset |
+| `COMPONENT_HORIZONTAL_PADDING` | 12 | Standard row/empty-state horizontal inset |
+| `COMPONENT_VERTICAL_PADDING` | 8 | Standard metric/record-row vertical inset |
+| `MULTILINE_INPUT_HEIGHT` | 80 | Minimum multiline field height |
 
-Multiline fields and comparison bars have dedicated tokens in the same object. Add a token there instead of repeating a new numeric value in screen code.
+### App structure and controls
+
+| Token | Value | Meaning |
+|---|---:|---|
+| `APP_BAR_HEIGHT` | 56 | Top app bar |
+| `CARD_RADIUS` | 16 | Standard card/grouped-list corners |
+| `CONTROL_RADIUS` | 12 | Inputs, buttons and icon-container corners |
+| `DIALOG_RADIUS` | 20 | Dialog background corners |
+| `BUTTON_HEIGHT` | 48 | Standard action-button and input height |
+| `TOUCH_TARGET_SIZE` | 44 | Minimum touch target |
+| `SECTION_TAB_HEIGHT` | 48 | Standard section-tab control height |
+| `SECTION_HEADER_HEIGHT` | 36 | Section heading row |
+| `METRIC_TILE_MIN_HEIGHT` | 64 | Minimum financial metric row |
+| `RECORD_ROW_HEIGHT` | 64 | Minimum transaction row |
+| `RECORD_ICON_BOX_SIZE` | 40 | Icon container within a record/metric |
+| `STANDARD_ICON_SIZE` | 20 | Standard icon glyph |
+| `DIVIDER_HEIGHT` | 1 | Separator thickness |
+| `LIST_DIVIDER_START_INSET` | 56 | Start inset for grouped-list separators |
+| `EMPTY_STATE_VERTICAL_PADDING` | 24 | Vertical empty-state breathing room |
+
+### Bottom navigation geometry
+
+| Token | Value | Meaning |
+|---|---:|---|
+| `NAVIGATION_BAR_HEIGHT` | 68 | Full reserved navigation height |
+| `NAVIGATION_HORIZONTAL_PADDING` | 4 | Horizontal outer inset |
+| `NAVIGATION_VERTICAL_PADDING` | 4 | Vertical outer inset |
+| `NAVIGATION_ITEM_PADDING` | 2 | Each destination's inner inset |
+| `NAVIGATION_ICON_SLOT_WIDTH` | 38 | Icon slot width |
+| `NAVIGATION_ICON_SLOT_HEIGHT` | 30 | Icon slot height |
+| `NAVIGATION_LABEL_HEIGHT` | 20 | Navigation label height |
+| `NAVIGATION_CONTENT_HEIGHT` | 60 | Item content height after outer vertical padding |
+
+### Comparison-chart geometry
+
+| Token | Value | Meaning |
+|---|---:|---|
+| `CHART_LABEL_ROW_HEIGHT` | 24 | Label/value row |
+| `CHART_BAR_HEIGHT` | 7 | Comparison track/fill height |
+| `CHART_BAR_RADIUS_DP` | 5 | Track/fill corner radius |
+| `CHART_BAR_TOP_GAP` | 5 | Space before the track |
+| `CHART_HORIZONTAL_INSET` | 72 | Available-width adjustment |
+| `CHART_MIN_VISIBLE_FILL` | 3 | Minimum visible non-zero fill |
+
+### Motion
+
+| Token | Value | Meaning |
+|---|---:|---|
+| `MOTION_DURATION_MS` | 160 ms | Standard short UI transition |
+
+If a new value is needed, add a semantic token in `FinanceDesignTokens`, add an assertion to `FinanceDesignSystemTest`, update this inventory, and ensure the CI parity checker still passes. Never copy a raw number into a screen as a local shortcut.
 
 ## 6. Approved component catalogue
 
