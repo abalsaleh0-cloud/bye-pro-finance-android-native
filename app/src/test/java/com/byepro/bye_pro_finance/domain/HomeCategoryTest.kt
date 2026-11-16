@@ -6,16 +6,17 @@ import org.junit.Test
 
 class HomeCategoryTest {
     @Test
-    fun homeHasExactlyThreeCategoriesInTheRequiredOrder() {
+    fun homeHasExactlyFourCategoriesInTheRequiredOrder() {
         assertEquals(
             listOf(
                 HomeCategory.MONTHLY_BILLS,
                 HomeCategory.RENT,
-                HomeCategory.EXPENSES
+                HomeCategory.EXPENSES,
+                HomeCategory.RECEIVED_FROM_WORK
             ),
             HomeCategory.ordered
         )
-        assertEquals(3, HomeCategory.values().size)
+        assertEquals(4, HomeCategory.values().size)
     }
 
     @Test
@@ -28,5 +29,8 @@ class HomeCategoryTest {
 
         assertEquals(HomeRecordSource.HOME_EXPENSES, HomeCategory.EXPENSES.source)
         assertNull(HomeCategory.EXPENSES.billKind)
+
+        assertEquals(HomeRecordSource.WORK_TRANSFERS, HomeCategory.RECEIVED_FROM_WORK.source)
+        assertNull(HomeCategory.RECEIVED_FROM_WORK.billKind)
     }
 }
