@@ -1850,13 +1850,14 @@ class MainActivity : Activity() {
                 foreground = FinanceDesignSystem.ripple(this@MainActivity, darkTheme)
                 setOnClickListener { action() }
             }
+        var refreshCalendarAction: (() -> Unit)? = null
         val previousMonth = calendarArrow("‹") {
             visibleMonth.add(java.util.Calendar.MONTH, -1)
-            refreshCalendar()
+            refreshCalendarAction?.invoke()
         }
         val nextMonth = calendarArrow("›") {
             visibleMonth.add(java.util.Calendar.MONTH, 1)
-            refreshCalendar()
+            refreshCalendarAction?.invoke()
         }
         val monthTitle = FinanceDesignSystem.text(
             this, "", FinanceDesignTokens.TEXT_BODY_SP, palette.text, bold = true
@@ -1877,7 +1878,7 @@ class MainActivity : Activity() {
                     .setView(yearPicker)
                     .setPositiveButton(s(R.string.confirm)) { _, _ ->
                         visibleMonth.set(java.util.Calendar.YEAR, yearPicker.value)
-                        refreshCalendar()
+                        refreshCalendarAction?.invoke()
                     }
                     .setNegativeButton(s(R.string.cancel), null)
                     .show()
@@ -1900,7 +1901,7 @@ class MainActivity : Activity() {
             layoutDirection = View.LAYOUT_DIRECTION_RTL
         }
         root.addView(calendarGrid)
-        fun refreshCalendar() {
+        refreshCalendarAction = {
             val monthKey = YearMonth.of(
                 visibleMonth.get(java.util.Calendar.YEAR),
                 visibleMonth.get(java.util.Calendar.MONTH) + 1
@@ -1976,7 +1977,7 @@ class MainActivity : Activity() {
                 ))
             }
         }
-        refreshCalendar()
+        refreshCalendarAction?.invoke()
         val actions = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutDirection = View.LAYOUT_DIRECTION_RTL
@@ -2078,6 +2079,7 @@ class MainActivity : Activity() {
             ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.BUTTON_HEIGHT)
         ).apply { topMargin = dp(FinanceDesignTokens.SPACE_8) })
 
+        var rebuildPanelAction: (() -> Unit)? = null
         fun refreshHistory() {
             historyPanel.removeAllViews()
             if (history.isEmpty()) {
@@ -2132,7 +2134,7 @@ class MainActivity : Activity() {
                     expression.setSelection(expression.text.length)
                     mode = 0
                     clearResult()
-                    rebuildPanel()
+                    rebuildPanelAction?.invoke()
                 }
                 row.addView(reuse, LinearLayout.LayoutParams(dp(44), dp(44)))
                 val copy = FinanceDesignSystem.iconAction(
@@ -2317,19 +2319,18 @@ class MainActivity : Activity() {
                     ViewGroup.LayoutParams.MATCH_PARENT, dp(FinanceDesignTokens.BUTTON_HEIGHT)
                 ))
             }
-        lateinit var rebuildPanel: () -> Unit
-        rebuildPanel = {
+        rebuildPanelAction = {
             panel.removeAllViews()
             modeRow.removeAllViews()
             modeRow.addView(choiceChip(s(R.string.calculator_scientific), mode == 0) {
                 mode = 0
                 clearResult()
-                rebuildPanel()
+                rebuildPanelAction?.invoke()
             }, LinearLayout.LayoutParams(0, dp(38), 1f))
             modeRow.addView(choiceChip(s(R.string.calculator_financial), mode == 1) {
                 mode = 1
                 clearResult()
-                rebuildPanel()
+                rebuildPanelAction?.invoke()
             }, LinearLayout.LayoutParams(0, dp(38), 1f).apply {
                 marginStart = dp(FinanceDesignTokens.SPACE_8)
             })
@@ -2413,7 +2414,7 @@ class MainActivity : Activity() {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
             ).apply { topMargin = dp(FinanceDesignTokens.SPACE_8) })
         }
-        rebuildPanel()
+        rebuildPanelAction?.invoke()
         refreshHistory()
         val scroll = ScrollView(this).apply {
             isFillViewport = false
