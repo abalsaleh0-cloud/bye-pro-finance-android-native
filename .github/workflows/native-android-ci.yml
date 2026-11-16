@@ -51,15 +51,8 @@ jobs:
       - name: Run native design system tests
         run: gradle :app:testDebugUnitTest --no-daemon
 
-      - name: Enforce screen-level Design System usage
-        shell: bash
-        run: |
-          set -euo pipefail
-          SCREEN="app/src/main/java/com/byepro/bye_pro_finance/MainActivity.kt"
-          if grep -nE 'dp[[:space:]]*\([[:space:]]*[0-9]+|textSize[[:space:]]*=|setTextColor[[:space:]]*\(0x|setBackgroundColor[[:space:]]*\(0x|Color\.parseColor' "$SCREEN"; then
-            echo "::error::MainActivity contains screen-local styling. Use FinanceDesignTokens and FinanceComponents."
-            exit 1
-          fi
+      - name: Verify Design System consistency
+        run: python3 scripts/check_design_system.py
       - name: Verify Native application identity
         run: grep -F 'applicationId = "com.byepro.bye_pro_finance"' app/build.gradle.kts
 
