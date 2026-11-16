@@ -157,6 +157,83 @@ object FinanceComponents {
         }
     }
 
+    /** Standard month caption and selector used by all month-aware screens. */
+    fun monthSelector(
+        context: Context,
+        isDark: Boolean,
+        caption: String,
+        selectedMonth: String,
+        contentDescription: String,
+        onClick: () -> Unit
+    ): LinearLayout {
+        val palette = FinanceDesignSystem.colors(isDark)
+        return LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutDirection = View.LAYOUT_DIRECTION_RTL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_2),
+                0, FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_2))
+
+            val label = FinanceDesignSystem.text(
+                context,
+                caption,
+                FinanceDesignTokens.TEXT_LABEL_SP,
+                palette.secondaryText,
+                bold = true
+            )
+            addView(label, LinearLayout.LayoutParams(
+                0,
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.BUTTON_HEIGHT),
+                1f
+            ))
+
+            val month = FinanceDesignSystem.text(
+                context,
+                "$selectedMonth  ▾",
+                FinanceDesignTokens.TEXT_BODY_SP,
+                palette.accent,
+                bold = true
+            ).apply {
+                gravity = Gravity.CENTER
+                setPadding(
+                    FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8),
+                    0,
+                    FinanceDesignSystem.dp(context, FinanceDesignTokens.SPACE_8),
+                    0
+                )
+                minHeight = FinanceDesignSystem.dp(
+                    context, FinanceDesignTokens.TOUCH_TARGET_SIZE
+                )
+                this.contentDescription = contentDescription
+                isClickable = true
+                isFocusable = true
+                foreground = FinanceDesignSystem.ripple(context, isDark)
+                setOnClickListener { onClick() }
+            }
+            addView(month, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.TOUCH_TARGET_SIZE)
+            ))
+        }
+    }
+
+    /** Shared empty state keeps its typography and spacing consistent. */
+    fun emptyState(context: Context, isDark: Boolean, message: String): TextView =
+        FinanceDesignSystem.text(
+            context,
+            message,
+            FinanceDesignTokens.TEXT_BODY_SP,
+            FinanceDesignSystem.colors(isDark).secondaryText
+        ).apply {
+            gravity = Gravity.CENTER
+            setPadding(
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.EMPTY_STATE_VERTICAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.COMPONENT_HORIZONTAL_PADDING),
+                FinanceDesignSystem.dp(context, FinanceDesignTokens.EMPTY_STATE_VERTICAL_PADDING)
+            )
+        }
+
     fun metricRow(
         context: Context,
         isDark: Boolean,
