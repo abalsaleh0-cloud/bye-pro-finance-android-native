@@ -32,6 +32,7 @@ import com.byepro.bye_pro_finance.data.LocalAuthentication
 import com.byepro.bye_pro_finance.domain.ActivityItem
 import com.byepro.bye_pro_finance.domain.DashboardSummary
 import com.byepro.bye_pro_finance.domain.FinanceRecord
+import com.byepro.bye_pro_finance.domain.FinanceCalculatorEngine
 import com.byepro.bye_pro_finance.domain.HomeCategory
 import com.byepro.bye_pro_finance.domain.WorkCategory
 import com.byepro.bye_pro_finance.domain.HomeRecordSource
