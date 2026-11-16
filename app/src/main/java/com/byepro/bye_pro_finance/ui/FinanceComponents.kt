@@ -164,7 +164,7 @@ object FinanceComponents {
         caption: String,
         selectedMonth: String,
         contentDescription: String,
-        onClick: () -> Unit
+        onClick: (View) -> Unit
     ): LinearLayout {
         val palette = FinanceDesignSystem.colors(isDark)
         return LinearLayout(context).apply {
