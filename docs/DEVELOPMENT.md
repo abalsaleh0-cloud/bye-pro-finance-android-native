@@ -6,7 +6,7 @@
 - JDK 17
 - Gradle 9.5.0 (CI installs this version)
 - Android Gradle Plugin 9.3.1
-- Kotlin Gradle Plugin 2.4.20
+- Kotlin Gradle Plugin 2.4.21
 
 ## 2. Build locally
 
@@ -35,7 +35,7 @@ On pushes to `main` and pull requests, CI:
 2. Sets up Java 17.
 3. Installs Android SDK platform 36 and build tools 36.0.0.
 4. Sets up Gradle 9.5.0.
-5. Runs `:app:testDebugUnitTest`.
+5. Runs `:app:testDebugUnitTest`, including local-login and the three-category Home data-mapping tests.
 6. Runs `python3 scripts/check_design_system.py` to compare Kotlin palette values with Android XML resources, verify core dimensions, and reject screen-local styling.
 7. Confirms the Native release application ID is `com.byepro.bye_pro_finance`.
 8. Assembles the Native debug APK.
@@ -76,7 +76,7 @@ A passing CI run demonstrates that the configured tests pass and the debug APK a
 
 ## 7. Versioning and release gate
 
-Current Native release configuration: `1.1.55 (156)`.
+Current Native release configuration: `1.1.56 (157)`. Every accepted app update increments the version code; the Native preview package remains isolated with `.nativepreview`.
 
 Every accepted app update must increment the version code; version name should also be updated according to the release sequence. Debug preview builds remain separate and are not production releases.
 
